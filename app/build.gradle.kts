@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.dolgantsev.androindfirstproject"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.dolgantsev.androindfirstproject"
@@ -32,6 +32,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    viewBinding {
+        enable = true
     }
 }
 
