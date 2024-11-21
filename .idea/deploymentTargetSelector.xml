@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="MainActivity">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-11-12T16:18:51.018341100Z">
+        <DropdownSelection timestamp="2024-11-12T17:03:06.603421200Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Beltion\.android\avd\Small_Phone_API_27.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Beltion\.android\avd\Pixel_3_edited_API_34.avd" />
             </handle>
           </Target>
         </DropdownSelection>

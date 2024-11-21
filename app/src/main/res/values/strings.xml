@@ -1,10 +1,11 @@
 <resources>
-    <string name="app_name">AndroindFirstProject</string>
+    <string name="app_name">Киносыск</string>
     <string name="disclaimer">Картинки взяты с pexels.com</string>
     <string name="btn_menu1">Меню</string>
     <string name="btn_menu2">Избранное</string>
     <string name="btn_menu3">Посмотреть позже</string>
     <string name="btn_menu4">Подборки</string>
     <string name="btn_menu5">Настройки</string>
+    <string name="page_title">Ищем!</string>
 
 </resources>

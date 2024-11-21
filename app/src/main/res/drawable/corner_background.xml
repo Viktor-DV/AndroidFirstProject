@@ -3,5 +3,5 @@
     <gradient android:startColor="@android:color/holo_orange_light"
         android:endColor="@color/design_default_color_primary_dark"
         android:angle="45"/>
-    <corners android:radius="15dp"/>
+
 </shape>
