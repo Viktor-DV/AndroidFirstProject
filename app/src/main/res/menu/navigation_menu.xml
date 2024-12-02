@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/favorites"
+        android:icon="@drawable/round_fav"
+        android:title="@string/btn_menu2"
+        app:showAsAction="withText"/>
+    <item
+        android:id="@+id/watch_later"
+        android:icon="@drawable/round_saved"
+        android:title="@string/btn_menu3"
+        app:showAsAction="withText"/>
+    <item
+        android:id="@+id/selections"
+        android:icon="@drawable/round_collections"
+        android:title="@string/btn_menu4"
+        app:showAsAction="withText"/>
+</menu>

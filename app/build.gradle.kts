@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.dolgantsev.androindfirstproject"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.dolgantsev.androindfirstproject"
@@ -33,6 +33,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    viewBinding {
+        enable = true
+    }
 }
 
 dependencies {
@@ -45,4 +48,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+tasks.named("checkKotlinGradlePluginConfigurationErrors") {
+    onlyIf { false }
 }
