@@ -5,6 +5,8 @@
         <item name="colorPrimaryContainer">@color/design_default_color_primary_dark</item>
     </style>
 
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+
     <!-- Light and dark theme-specific configurations can inherit from Base -->
     <style name="Theme.AndroindFirstProject" parent="Base.Theme.AndroindFirstProject" />
 </resources>

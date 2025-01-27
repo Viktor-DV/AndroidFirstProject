@@ -1,12 +1,9 @@
 package com.dolgantsev.androindfirstproject
 
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.os.Bundle
-import android.view.animation.LinearInterpolator
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -46,36 +43,49 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        animateCard(findViewById(R.id.poster_1))
-        animateCard(findViewById(R.id.poster_2))
-        animateCard(findViewById(R.id.poster_3))
-        animateCard(findViewById(R.id.poster_4))
+
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_placeholder, HomeFragment())
+            .addToBackStack(null)
+            .commit()
+
     }
 
-    private fun animateCard(card: CardView) {
-        val moveUp = ObjectAnimator.ofFloat(card, "translationY", 0f, -10f).apply {
-            duration = 1000
-            interpolator = LinearInterpolator()
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-        }
+    fun launchDetailsFragment(film: Film) {
+        //Создаем "посылку"
+        val bundle = Bundle()
+        //Кладем наш фильм в "посылку"
+        bundle.putParcelable("film", film)
+        //Кладем фрагмент с деталями в перменную
+        val fragment = DetailsFragment()
+        //Прикрепляем нашу "посылку" к фрагменту
+        fragment.arguments = bundle
 
-        val rotate = ObjectAnimator.ofFloat(card, "rotation", 0f, 2f).apply {
-            duration = 1500
-            interpolator = LinearInterpolator()
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-        }
-
-        val scale = ObjectAnimator.ofFloat(card, "scaleX", 1f, 1.05f).apply {
-            duration = 1200
-            interpolator = LinearInterpolator()
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-        }
-
-        val animatorSet = AnimatorSet()
-        animatorSet.playTogether(moveUp, rotate, scale)
-        animatorSet.start()
+        //Запускаем фрагмент
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_placeholder, fragment)
+            .addToBackStack(null)
+            .commit()
     }
+
+    //Дополнительное задание ✱
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            AlertDialog.Builder(this)
+                .setMessage("Вы уверены, что хотите покинуть приложение?")
+                .setCancelable(false)
+                .setPositiveButton("Да") { dialog, id ->
+                    onBackPressedDispatcher.onBackPressed()
+                }
+                .setNegativeButton("Нет") { dialog, id ->
+                    dialog.dismiss()
+                }
+                .show()
+        } else {
+            onBackPressedDispatcher.onBackPressed()
+        }
+    }
+
 }

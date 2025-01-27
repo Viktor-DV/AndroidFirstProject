@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId = "com.dolgantsev.androindfirstproject"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -48,6 +48,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.recyclerview)
 }
 
 tasks.named("checkKotlinGradlePluginConfigurationErrors") {
