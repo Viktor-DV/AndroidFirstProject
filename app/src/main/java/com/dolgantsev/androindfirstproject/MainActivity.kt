@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.dolgantsev.androidfirstproject.DetailsFragment
+import com.dolgantsev.androidfirstproject.FavoritesFragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -28,7 +30,11 @@ class MainActivity : AppCompatActivity() {
         bottom_navigation.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.favorites -> {
-                    Toast.makeText(this, "Избранное", Toast.LENGTH_SHORT).show()
+                    supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.fragment_placeholder, FavoritesFragment())
+                        .addToBackStack(null)
+                        .commit()
                     true
                 }
                 R.id.watch_later -> {
@@ -70,7 +76,6 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    //Дополнительное задание ✱
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             AlertDialog.Builder(this)
