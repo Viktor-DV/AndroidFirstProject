@@ -2,9 +2,9 @@ package com.dolgantsev.androindfirstproject
 
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -13,22 +13,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val topAppBar = findViewById<MaterialToolbar>(R.id.topAppBar)
-        topAppBar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.settings -> {
-                    Toast.makeText(this, "Настройки", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                else -> false
-            }
-        }
-
         val bottom_navigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottom_navigation.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.favorites -> {
-                    Toast.makeText(this, "Избранное", Toast.LENGTH_SHORT).show()
+                    supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.fragment_placeholder, FavoritesFragment())
+                        .addToBackStack(null)
+                        .commit()
                     true
                 }
                 R.id.watch_later -> {
@@ -43,49 +36,45 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
         supportFragmentManager
             .beginTransaction()
             .add(R.id.fragment_placeholder, HomeFragment())
             .addToBackStack(null)
             .commit()
 
+        // Добавление обратного вызова для обработки нажатия кнопки "Назад"
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    AlertDialog.Builder(this@MainActivity)
+                        .setMessage("Вы уверены, что хотите покинуть приложение?")
+                        .setCancelable(false)
+                        .setPositiveButton("Да") { dialog, id ->
+                            isEnabled = false // Отключаем обратный вызов
+                            onBackPressedDispatcher.onBackPressed()
+                        }
+                        .setNegativeButton("Нет") { dialog, id ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                } else {
+                    isEnabled = false // Отключаем обратный вызов
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     fun launchDetailsFragment(film: Film) {
-        //Создаем "посылку"
         val bundle = Bundle()
-        //Кладем наш фильм в "посылку"
         bundle.putParcelable("film", film)
-        //Кладем фрагмент с деталями в перменную
         val fragment = DetailsFragment()
-        //Прикрепляем нашу "посылку" к фрагменту
         fragment.arguments = bundle
 
-        //Запускаем фрагмент
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_placeholder, fragment)
             .addToBackStack(null)
             .commit()
     }
-
-    //Дополнительное задание ✱
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            AlertDialog.Builder(this)
-                .setMessage("Вы уверены, что хотите покинуть приложение?")
-                .setCancelable(false)
-                .setPositiveButton("Да") { dialog, id ->
-                    onBackPressedDispatcher.onBackPressed()
-                }
-                .setNegativeButton("Нет") { dialog, id ->
-                    dialog.dismiss()
-                }
-                .show()
-        } else {
-            onBackPressedDispatcher.onBackPressed()
-        }
-    }
-
 }
