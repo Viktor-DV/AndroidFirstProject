@@ -11,6 +11,10 @@ activity = "1.10.0"
 constraintlayout = "2.2.0"
 recyclerviewVersion = "1.4.0"
 glide = "4.16.0"
+lottieVersion = "6.6.2"
+
+
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -24,6 +28,8 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerviewVersion" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottieVersion" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

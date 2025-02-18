@@ -9,12 +9,12 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.dolgantsev.androindfirstproject.databinding.MergeHomeScreenContentBinding
+import com.dolgantsev.androindfirstproject.databinding.FragmentHomeBinding
 import java.util.Locale
 
 class HomeFragment : Fragment() {
 
-    private var _binding: MergeHomeScreenContentBinding? = null
+    private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
     private val filmsDataBase = listOf(
@@ -35,8 +35,8 @@ class HomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = MergeHomeScreenContentBinding.inflate(inflater, container, false)
+    ): View? {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -82,6 +82,9 @@ class HomeFragment : Fragment() {
                 return true
             }
         })
+
+        // Анимация
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 1)
     }
 
     override fun onDestroyView() {

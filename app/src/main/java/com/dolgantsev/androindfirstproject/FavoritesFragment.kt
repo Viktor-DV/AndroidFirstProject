@@ -8,32 +8,27 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-
+import com.dolgantsev.androindfirstproject.databinding.FragmentFavoritesBinding
 
 class FavoritesFragment : Fragment() {
 
+    private var _binding: FragmentFavoritesBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var filmsAdapter: FilmListRecyclerAdapter
-    private lateinit var favoritesRecycler: RecyclerView // Добавляем RecyclerView для использования через findViewById
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Используем стандартный способ инфлейта разметки без DataBinding
-        return inflater.inflate(R.layout.fragment_favorites, container, false)
+        _binding = FragmentFavoritesBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Находим RecyclerView вручную через findViewById
-        favoritesRecycler = view.findViewById(R.id.favorites_recycler)
-
-        // Инициализация списка избранных фильмов (например, из базы данных)
-        val favoritesList: List<Film> = emptyList() // Замените на реальный список
-
-        // Инициализация адаптера для RecyclerView
+        // Инициализация адаптера
         filmsAdapter = FilmListRecyclerAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
             override fun click(film: Film) {
                 (requireActivity() as MainActivity).launchDetailsFragment(film)
@@ -41,19 +36,22 @@ class FavoritesFragment : Fragment() {
         })
 
         // Настройка RecyclerView
-        favoritesRecycler.apply {
-            // Присваиваем адаптер
+        binding.favoritesRecycler.apply {
             adapter = filmsAdapter
-
-            // Присваиваем LayoutManager
             layoutManager = LinearLayoutManager(requireContext())
-
-            // Применяем декоратор для отступов
-            val decorator = TopSpacingItemDecoration(8)
-            addItemDecoration(decorator)
+            addItemDecoration(TopSpacingItemDecoration(8))
         }
 
-        // Добавляем элементы в адаптер
-        filmsAdapter.addItems(favoritesList) // Убедитесь, что метод добавляет данные
+        // Добавление элементов в адаптер
+        val favoritesList: List<Film> = emptyList() // Замените на реальный список
+        filmsAdapter.addItems(favoritesList)
+
+        // Анимация
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 3)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
