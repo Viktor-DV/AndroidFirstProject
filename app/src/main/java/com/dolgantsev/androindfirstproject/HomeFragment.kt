@@ -35,7 +35,7 @@ class HomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -43,20 +43,18 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         // Настройка RecyclerView
-        val recyclerView = binding.mainRecycler
         filmsAdapter = FilmListRecyclerAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
             override fun click(film: Film) {
                 (requireActivity() as MainActivity).launchDetailsFragment(film)
             }
         })
-        recyclerView.adapter = filmsAdapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Добавляем разделители между элементами
-        val decorator = TopSpacingItemDecoration(8)
-        recyclerView.addItemDecoration(decorator)
+        binding.mainRecycler.apply {
+            adapter = filmsAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            addItemDecoration(TopSpacingItemDecoration(8))
+        }
 
         // Добавляем данные в адаптер
         filmsAdapter.addItems(filmsDataBase)
@@ -69,26 +67,24 @@ class HomeFragment : Fragment() {
         // Устанавливаем слушатель для SearchView
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                // Реализация при нажатии "поиск"
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                // Если ввод пуст, вставляем в адаптер всю БД
-                if (newText.isNullOrEmpty()) {
-                    filmsAdapter.addItems(filmsDataBase)
+                val filteredList = if (newText.isNullOrEmpty()) {
+                    filmsDataBase
                 } else {
-                    // Фильтруем список на поиск подходящих сочетаний
-                    val result = filmsDataBase.filter {
-                        // Приводим запрос и имя фильма к нижнему регистру
+                    filmsDataBase.filter {
                         it.title.lowercase(Locale.getDefault()).contains(newText.lowercase(Locale.getDefault()))
                     }
-                    // Добавляем в адаптер
-                    filmsAdapter.addItems(result)
                 }
+                filmsAdapter.addItems(filteredList)
                 return true
             }
         })
+
+        // Анимация
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 1)
     }
 
     override fun onDestroyView() {
