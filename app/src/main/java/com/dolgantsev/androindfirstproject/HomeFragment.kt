@@ -1,6 +1,5 @@
 package com.dolgantsev.androindfirstproject
 
-import FilmListRecyclerAdapter
 import TopSpacingItemDecoration
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,16 +17,17 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val filmsDataBase = listOf(
-        Film("Побег из Шоушенка", R.drawable.film_poster1, "История дружбы двух заключенных, которые находят свободу даже за решеткой."),
-        Film("Крестный отец", R.drawable.film_poster2, "Патриарх мафиозного клана передает власть своему сыну."),
-        Film("Темный рыцарь", R.drawable.film_poster3, "Бэтмен противостоит Джокеру, который угрожает разрушить Готэм."),
-        Film("Криминальное чтиво", R.drawable.film_poster4, "Несколько историй о криминальных персонажах, переплетающихся самым неожиданным образом."),
-        Film("Список Шиндлера", R.drawable.film_poster5, "Немецкий промышленник спасает сотни евреев во время Холокоста."),
-        Film("Форрест Гамп", R.drawable.film_poster6, "Простодушный парень с богатой историей, проживающий невероятную жизнь."),
-        Film("Начало", R.drawable.film_poster7, "Команда профессионалов проникает в сны, чтобы внедрить идею."),
-        Film("Матрица", R.drawable.film_poster8, "Хакер узнает, что реальный мир — это иллюзия, созданная машинами."),
-        Film("Бойцовский клуб", R.drawable.film_poster9, "Два мужчины создают подпольный клуб, где правила диктует сила."),
-        Film("Титаник", R.drawable.film_poster10, "Трагическая история любви на фоне крушения роскошного лайнера.")
+        Film("Побег из Шоушенка", R.drawable.film_poster1, "История дружбы двух заключенных, которые находят свободу даже за решеткой.", 7.7f),
+        Film("Крестный отец", R.drawable.film_poster2, "Патриарх мафиозного клана передает власть своему сыну.", 7.7f),
+        Film("Темный рыцарь", R.drawable.film_poster3, "Бэтмен противостоит Джокеру, который угрожает разрушить Готэм.", 7.7f),
+        Film("Криминальное чтиво", R.drawable.film_poster4, "Несколько историй о криминальных персонажах, переплетающихся самым неожиданным образом.", 7.7f),
+        Film("Список Шиндлера", R.drawable.film_poster5, "Немецкий промышленник спасает сотни евреев во время Холокоста.", 7.7f),
+        Film("Форрест Гамп", R.drawable.film_poster6, "Простодушный парень с богатой историей, проживающий невероятную жизнь.", 7.7f),
+        Film("Начало", R.drawable.film_poster7, "Команда профессионалов проникает в сны, чтобы внедрить идею.", 7.7f),
+        Film("Матрица", R.drawable.film_poster8, "Хакер узнает, что реальный мир — это иллюзия, созданная машинами.", 7.7f),
+        Film("Бойцовский клуб", R.drawable.film_poster9, "Два мужчины создают подпольный клуб, где правила диктует сила.", 7.7f),
+        Film("Титаник", R.drawable.film_poster10, "Трагическая история любви на фоне крушения роскошного лайнера.", 7.7f)
+
     )
 
     private lateinit var filmsAdapter: FilmListRecyclerAdapter
@@ -35,7 +35,7 @@ class HomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -43,20 +43,18 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         // Настройка RecyclerView
-        val recyclerView = binding.mainRecycler
         filmsAdapter = FilmListRecyclerAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
             override fun click(film: Film) {
                 (requireActivity() as MainActivity).launchDetailsFragment(film)
             }
         })
-        recyclerView.adapter = filmsAdapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Добавляем разделители между элементами
-        val decorator = TopSpacingItemDecoration(8)
-        recyclerView.addItemDecoration(decorator)
+        binding.mainRecycler.apply {
+            adapter = filmsAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            addItemDecoration(TopSpacingItemDecoration(8))
+        }
 
         // Добавляем данные в адаптер
         filmsAdapter.addItems(filmsDataBase)
@@ -69,26 +67,24 @@ class HomeFragment : Fragment() {
         // Устанавливаем слушатель для SearchView
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                // Реализация при нажатии "поиск"
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                // Если ввод пуст, вставляем в адаптер всю БД
-                if (newText.isNullOrEmpty()) {
-                    filmsAdapter.addItems(filmsDataBase)
+                val filteredList = if (newText.isNullOrEmpty()) {
+                    filmsDataBase
                 } else {
-                    // Фильтруем список на поиск подходящих сочетаний
-                    val result = filmsDataBase.filter {
-                        // Приводим запрос и имя фильма к нижнему регистру
+                    filmsDataBase.filter {
                         it.title.lowercase(Locale.getDefault()).contains(newText.lowercase(Locale.getDefault()))
                     }
-                    // Добавляем в адаптер
-                    filmsAdapter.addItems(result)
                 }
+                filmsAdapter.addItems(filteredList)
                 return true
             }
         })
+
+        // Анимация
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 1)
     }
 
     override fun onDestroyView() {
