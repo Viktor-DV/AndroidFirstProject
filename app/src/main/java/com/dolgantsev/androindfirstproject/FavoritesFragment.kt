@@ -1,6 +1,5 @@
 package com.dolgantsev.androindfirstproject
 
-import FilmListRecyclerAdapter
 import TopSpacingItemDecoration
 import android.os.Bundle
 import android.view.LayoutInflater
