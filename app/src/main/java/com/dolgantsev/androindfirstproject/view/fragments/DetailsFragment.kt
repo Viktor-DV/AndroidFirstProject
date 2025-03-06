@@ -1,4 +1,4 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.view.fragments
 
 import android.content.Intent
 import android.os.Build
@@ -10,6 +10,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import com.dolgantsev.androindfirstproject.R
+import com.dolgantsev.androindfirstproject.domain.Film
 
 class DetailsFragment : Fragment() {
 

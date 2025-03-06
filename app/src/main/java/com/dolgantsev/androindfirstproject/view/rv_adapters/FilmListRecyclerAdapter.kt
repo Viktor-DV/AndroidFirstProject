@@ -1,9 +1,12 @@
+package com.dolgantsev.androindfirstproject.view.rv_adapters
+
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
-import com.dolgantsev.androindfirstproject.Film
+import com.dolgantsev.androindfirstproject.view.rv_viewholders.FilmViewHolder
 import com.dolgantsev.androindfirstproject.R
+import com.dolgantsev.androindfirstproject.domain.Film
 
 // В параметр передаем слушатель, чтобы обрабатывать нажатия
 class FilmListRecyclerAdapter(private val clickListener: OnItemClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

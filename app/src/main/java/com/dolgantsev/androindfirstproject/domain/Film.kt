@@ -1,4 +1,4 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.domain
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
@@ -8,5 +8,6 @@ data class Film(
     val title: String,
     val poster: Int,
     val description: String,
+    var rating: Float = 0f,
     var isInFavorites: Boolean = false
 ) : Parcelable
