@@ -1,4 +1,4 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.view.customviews
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -10,6 +10,7 @@ import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import com.dolgantsev.androindfirstproject.R
 
 class RatingDonutView @JvmOverloads constructor(
     context: Context,

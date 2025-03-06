@@ -1,13 +1,17 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.view.fragments
 
-import TopSpacingItemDecoration
+import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpacingItemDecoration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
+import com.dolgantsev.androindfirstproject.MainActivity
 import com.dolgantsev.androindfirstproject.databinding.FragmentFavoritesBinding
+import com.dolgantsev.androindfirstproject.domain.Film
+import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 
 class FavoritesFragment : Fragment() {
 

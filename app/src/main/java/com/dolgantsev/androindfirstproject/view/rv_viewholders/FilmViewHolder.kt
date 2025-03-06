@@ -1,10 +1,13 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.view.rv_viewholders
 
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.dolgantsev.androindfirstproject.R
+import com.dolgantsev.androindfirstproject.domain.Film
+import com.dolgantsev.androindfirstproject.view.customviews.RatingDonutView
 
 class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     // Привязываем View из layout к переменным

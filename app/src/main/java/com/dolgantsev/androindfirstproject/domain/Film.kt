@@ -1,4 +1,4 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.domain
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

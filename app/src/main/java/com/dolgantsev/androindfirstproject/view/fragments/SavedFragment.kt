@@ -1,4 +1,4 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.view.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.dolgantsev.androindfirstproject.databinding.FragmentSavedBinding
+import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 
 class SavedFragment : Fragment() {
 

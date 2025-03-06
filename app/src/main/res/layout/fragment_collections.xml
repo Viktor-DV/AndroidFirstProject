@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_collections"
-    tools:context=".CollectionsFragment">
+    tools:context=".view.fragments.CollectionsFragment">
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

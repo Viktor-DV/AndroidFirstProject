@@ -11,6 +11,12 @@ import androidx.fragment.app.Fragment
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
 import com.dolgantsev.androindfirstproject.databinding.ActivityMainBinding
+import com.dolgantsev.androindfirstproject.domain.Film
+import com.dolgantsev.androindfirstproject.view.fragments.CollectionsFragment
+import com.dolgantsev.androindfirstproject.view.fragments.DetailsFragment
+import com.dolgantsev.androindfirstproject.view.fragments.FavoritesFragment
+import com.dolgantsev.androindfirstproject.view.fragments.HomeFragment
+import com.dolgantsev.androindfirstproject.view.fragments.SavedFragment
 
 class MainActivity : AppCompatActivity() {
 

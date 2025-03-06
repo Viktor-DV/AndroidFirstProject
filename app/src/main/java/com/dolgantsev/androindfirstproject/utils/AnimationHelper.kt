@@ -1,4 +1,4 @@
-package com.dolgantsev.androindfirstproject
+package com.dolgantsev.androindfirstproject.utils
 
 import android.app.Activity
 import android.os.Handler
