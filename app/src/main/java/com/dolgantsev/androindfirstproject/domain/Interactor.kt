@@ -10,7 +10,6 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class Interactor(
-    private val repo: MainRepository,
     private val retrofitService: TmdbApi
 ) {
     fun getFilmsFromApi(page: Int, callback: HomeFragmentViewModel.ApiCallback) {
