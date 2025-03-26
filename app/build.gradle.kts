@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.parcelize)
-    id("kotlin-kapt")
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.dolgantsev.androindfirstproject"
-        minSdk = 35
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -30,17 +30,16 @@ android {
         }
     }
 
-
     buildFeatures {
         buildConfig = true
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
     dataBinding {
         enable = true
@@ -64,6 +63,9 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.dagger)
     implementation(libs.javax.inject)
+    implementation(libs.swipe.refresh)
+    implementation(libs.kotlinx.metadata.jvm)
+
     kapt(libs.glide.compiler)
     kapt(libs.dagger.compiler)
 

@@ -1,5 +1,6 @@
 package com.dolgantsev.androindfirstproject
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,15 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
+import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider.Companion.CATEGORY_KEY
 import com.dolgantsev.androindfirstproject.databinding.ActivityMainBinding
 import com.dolgantsev.androindfirstproject.domain.Film
-import com.dolgantsev.androindfirstproject.view.fragments.CollectionsFragment
-import com.dolgantsev.androindfirstproject.view.fragments.DetailsFragment
-import com.dolgantsev.androindfirstproject.view.fragments.FavoritesFragment
-import com.dolgantsev.androindfirstproject.view.fragments.HomeFragment
-import com.dolgantsev.androindfirstproject.view.fragments.SavedFragment
+import com.dolgantsev.androindfirstproject.view.fragments.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var startScreenAnimationView: LottieAnimationView
@@ -31,49 +29,49 @@ class MainActivity : AppCompatActivity() {
 
         startScreenAnimationView = binding.startScreenAnimationView
 
-        // Настройка анимации Lottie
-        startScreenAnimationView.setRepeatCount(2) // Повторить 2 раза (всего 3 проигрывания)
-        startScreenAnimationView.repeatMode = LottieDrawable.RESTART // Использование правильной константы
-
-        // Запуск анимации
+        startScreenAnimationView.setRepeatCount(2)
+        startScreenAnimationView.repeatMode = LottieDrawable.RESTART
         startScreenAnimationView.playAnimation()
 
-        // Используем Handler для ожидания окончания анимации
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
-            // Скрываем анимацию и показываем фрагменты
             startScreenAnimationView.visibility = View.GONE
 
-            // Инициализация с HomeFragment
             if (savedInstanceState == null) {
                 changeFragment(HomeFragment(), "home")
             }
-        }, 3000) // Задержка в 3 секунды
+        }, 3000)
 
         val bottomNavigation = binding.bottomNavigation
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {
                     val tag = "home"
-                    val fragment = checkFragmentExistence(tag) ?: HomeFragment()
+                    val fragment: Fragment = checkFragmentExistence(tag) ?: HomeFragment()
                     changeFragment(fragment, tag)
                     true
                 }
                 R.id.favorites -> {
                     val tag = "favorites"
-                    val fragment = checkFragmentExistence(tag) ?: FavoritesFragment()
+                    val fragment: Fragment = checkFragmentExistence(tag) ?: FavoritesFragment()
                     changeFragment(fragment, tag)
                     true
                 }
                 R.id.watch_later -> {
                     val tag = "watch_later"
-                    val fragment = checkFragmentExistence(tag) ?: SavedFragment()
+                    val fragment: Fragment = checkFragmentExistence(tag) ?: SavedFragment()
                     changeFragment(fragment, tag)
                     true
                 }
                 R.id.selections -> {
                     val tag = "selections"
-                    val fragment = checkFragmentExistence(tag) ?: CollectionsFragment()
+                    val fragment: Fragment = checkFragmentExistence(tag) ?: CollectionsFragment()
+                    changeFragment(fragment, tag)
+                    true
+                }
+                R.id.settings -> {
+                    val tag = "settings"
+                    val fragment: Fragment = checkFragmentExistence(tag) ?: SettingsFragment()
                     changeFragment(fragment, tag)
                     true
                 }
@@ -81,7 +79,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Обработка нажатия кнопки "Назад"
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (supportFragmentManager.backStackEntryCount > 0) {
@@ -102,6 +99,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        App.instance.preferences.registerListener(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        App.instance.preferences.unregisterListener(this)
     }
 
     private fun changeFragment(fragment: Fragment, tag: String) {
@@ -123,5 +127,12 @@ class MainActivity : AppCompatActivity() {
             arguments = bundle
         }
         changeFragment(fragment, "details")
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == CATEGORY_KEY) {
+            val homeFragment = supportFragmentManager.findFragmentByTag("home") as? HomeFragment
+            homeFragment?.updateMoviesList()
+        }
     }
 }

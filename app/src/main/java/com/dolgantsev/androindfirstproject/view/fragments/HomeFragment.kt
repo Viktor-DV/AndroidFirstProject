@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dolgantsev.androindfirstproject.MainActivity
@@ -27,13 +28,9 @@ class HomeFragment : Fragment() {
     }
 
     private var filmsDataBase = listOf<Film>()
-        //Используем backing field
         set(value) {
-            //Если придет такое же значение, то мы выходим из метода
             if (field == value) return
-            //Если пришло другое значение, то кладем его в переменную
             field = value
-            //Обновляем RV адаптер
             filmsAdapter.addItems(field)
         }
 
@@ -42,7 +39,7 @@ class HomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -50,13 +47,25 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.filmsListLiveData.observe(viewLifecycleOwner) { newList ->
-            if (filmsDataBase != newList) {
-                filmsDataBase = newList
-            }
-        }
+        viewModel.filmsListLiveData.observe(viewLifecycleOwner, Observer<List<Film>> {
+            filmsDataBase = it
+        })
 
-        // Настройка RecyclerView
+        initPullToRefresh()
+        initRecyclerView()
+        initSearchView()
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 1)
+    }
+
+    private fun initPullToRefresh() {
+        binding.pullToRefresh.setOnRefreshListener {
+            filmsAdapter.clearItems()
+            viewModel.getFilms()
+            binding.pullToRefresh.isRefreshing = false
+        }
+    }
+
+    private fun initRecyclerView() {
         filmsAdapter = FilmListRecyclerAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
             override fun click(film: Film) {
                 (requireActivity() as MainActivity).launchDetailsFragment(film)
@@ -69,15 +78,14 @@ class HomeFragment : Fragment() {
             addItemDecoration(TopSpacingItemDecoration(8))
         }
 
-        // Добавляем данные в адаптер
         filmsAdapter.addItems(filmsDataBase)
+    }
 
-        // Приводим SearchView в развернутое состояние при клике
+    private fun initSearchView() {
         binding.searchView.setOnClickListener {
             binding.searchView.isIconified = false
         }
 
-        // Устанавливаем слушатель для SearchView
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return true
@@ -95,9 +103,6 @@ class HomeFragment : Fragment() {
                 return true
             }
         })
-
-        // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 1)
     }
 
     override fun onDestroyView() {
