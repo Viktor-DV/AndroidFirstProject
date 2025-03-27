@@ -14,7 +14,12 @@ import com.airbnb.lottie.LottieDrawable
 import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider.Companion.CATEGORY_KEY
 import com.dolgantsev.androindfirstproject.databinding.ActivityMainBinding
 import com.dolgantsev.androindfirstproject.domain.Film
-import com.dolgantsev.androindfirstproject.view.fragments.*
+import com.dolgantsev.androindfirstproject.view.fragments.CollectionsFragment
+import com.dolgantsev.androindfirstproject.view.fragments.DetailsFragment
+import com.dolgantsev.androindfirstproject.view.fragments.FavoritesFragment
+import com.dolgantsev.androindfirstproject.view.fragments.HomeFragment
+import com.dolgantsev.androindfirstproject.view.fragments.SavedFragment
+import com.dolgantsev.androindfirstproject.view.fragments.SettingsFragment
 
 class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 

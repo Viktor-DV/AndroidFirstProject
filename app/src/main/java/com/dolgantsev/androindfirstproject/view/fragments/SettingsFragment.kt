@@ -1,6 +1,5 @@
 package com.dolgantsev.androindfirstproject.view.fragments
 
-import android.app.Fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,7 +33,7 @@ class SettingsFragment : Fragment() {
         AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 5)
 
         // Наблюдение за настройками
-        viewModel.categoryPropertyLifeData.observe(viewLifecycleOwner, Observer { category ->
+        viewModel.categoryPropertyLiveData.observe(viewLifecycleOwner, Observer<String> { category ->
             when (category) {
                 POPULAR_CATEGORY -> binding.radioGroup.check(R.id.radio_popular)
                 TOP_RATED_CATEGORY -> binding.radioGroup.check(R.id.radio_top_rated)
@@ -43,7 +42,7 @@ class SettingsFragment : Fragment() {
             }
         })
 
-        // Обработчик нажатий на радио-кнопки
+        // Обработчик нажатий
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.radio_popular -> viewModel.putCategoryProperty(POPULAR_CATEGORY)

@@ -1,13 +1,15 @@
 package com.dolgantsev.androindfirstproject.di.moduls
 
 import com.dolgantsev.androindfirstproject.data.dto.MainRepository
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-interface DatabaseModule {
-    @Binds
+class DatabaseModule {
+    @Provides
     @Singleton
-    fun bindRepository(impl: MainRepository): MainRepository
+    fun provideRepository(): MainRepository {
+        return MainRepository()
+    }
 }

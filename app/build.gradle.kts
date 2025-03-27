@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.dolgantsev.androindfirstproject"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.dolgantsev.androindfirstproject"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
         vectorDrawables.useSupportLibrary = true
@@ -76,4 +76,12 @@ dependencies {
 
 tasks.named("checkKotlinGradlePluginConfigurationErrors") {
     onlyIf { false }
+}
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
+        force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24")
+        force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24")
+        force("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
+    }
 }
