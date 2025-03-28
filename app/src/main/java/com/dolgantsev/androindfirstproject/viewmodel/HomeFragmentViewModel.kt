@@ -10,7 +10,6 @@ import javax.inject.Inject
 class HomeFragmentViewModel : ViewModel() {
     val filmsListLiveData: MutableLiveData<List<Film>> = MutableLiveData()
 
-    //Инициализируем интерактор
     @Inject
     lateinit var interactor: Interactor
 
@@ -26,8 +25,32 @@ class HomeFragmentViewModel : ViewModel() {
             }
 
             override fun onFailure() {
+                filmsListLiveData.postValue(interactor.getFilmsFromDB())
             }
         })
+    }
+
+    // Пример: обновление фильма
+    fun updateFilm(film: Film) {
+        interactor.updateFilm(film)
+        getFilms() // Перезагрузка списка после обновления
+    }
+
+    // Пример: удаление фильма
+    fun deleteFilm(title: String) {
+        interactor.deleteFilm(title)
+        getFilms() // Перезагрузка списка после удаления
+    }
+
+    // Пример: получение фильмов с рейтингом выше 7.0
+    fun getHighRatedFilms() {
+        filmsListLiveData.postValue(interactor.getFilmsByRating(7.0))
+    }
+
+    // Пример: получение фильма по названию
+    fun getFilmByTitle(title: String) {
+        val film = interactor.getFilmByTitle(title)
+        film?.let { filmsListLiveData.postValue(listOf(it)) }
     }
 
     interface ApiCallback {

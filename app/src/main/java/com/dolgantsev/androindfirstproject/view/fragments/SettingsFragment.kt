@@ -30,7 +30,7 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 5)
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 5)
 
         // Наблюдение за настройками
         viewModel.categoryPropertyLiveData.observe(viewLifecycleOwner, Observer<String> { category ->

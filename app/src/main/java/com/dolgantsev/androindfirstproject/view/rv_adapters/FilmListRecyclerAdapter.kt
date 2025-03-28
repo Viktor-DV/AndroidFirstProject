@@ -47,13 +47,12 @@ class FilmListRecyclerAdapter(private val clickListener: OnItemClickListener) : 
         items.addAll(list)  // Добавляем новый список
         notifyDataSetChanged()  // Обновляем RecyclerView
     }
-    fun clearItems() {
-        items.clear()
-        notifyDataSetChanged()
-    }
 
     // Интерфейс для обработки кликов
     interface OnItemClickListener {
         fun click(film: Film)  // Обрабатываем клик по фильму
     }
+
+    // Новый метод для получения текущего списка
+    fun getCurrentList(): List<Film> = items.toList()
 }

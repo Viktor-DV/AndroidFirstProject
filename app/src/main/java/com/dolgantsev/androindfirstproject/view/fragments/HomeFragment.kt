@@ -35,7 +35,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 1)
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 1)
 
         // Инициализация адаптера
         filmsAdapter = FilmListRecyclerAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
@@ -54,6 +54,54 @@ class HomeFragment : Fragment() {
         viewModel.filmsListLiveData.observe(viewLifecycleOwner, Observer { films ->
             filmsAdapter.addItems(films)
         })
+
+        // Обработка поиска по названию через SearchView
+        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let {
+                    if (it.isNotEmpty()) {
+                        viewModel.getFilmByTitle(it)
+                    }
+                }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false // Пока не фильтруем в реальном времени
+            }
+        })
+
+        // Обновление списка при свайпе
+        binding.pullToRefresh.setOnRefreshListener {
+            viewModel.getFilms()
+            binding.pullToRefresh.isRefreshing = false
+        }
+
+        // Кнопка для фильмов с высоким рейтингом
+        binding.highRatedButton.setOnClickListener {
+            viewModel.getHighRatedFilms()
+        }
+
+        // Кнопка для обновления фильма (пример с первым фильмом из списка)
+        binding.updateButton.setOnClickListener {
+            val currentFilms = filmsAdapter.getCurrentList()
+            if (currentFilms.isNotEmpty()) {
+                val filmToUpdate = currentFilms[0].copy(
+                    poster = "updated_poster_url",
+                    description = "Updated description",
+                    rating = 8.5
+                )
+                viewModel.updateFilm(filmToUpdate)
+            }
+        }
+
+        // Кнопка для удаления фильма (пример с первым фильмом из списка)
+        binding.deleteButton.setOnClickListener {
+            val currentFilms = filmsAdapter.getCurrentList()
+            if (currentFilms.isNotEmpty()) {
+                viewModel.deleteFilm(currentFilms[0].title)
+            }
+        }
 
         // Начальная загрузка фильмов
         viewModel.getFilms()

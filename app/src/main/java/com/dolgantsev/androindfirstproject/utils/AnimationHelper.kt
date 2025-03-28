@@ -1,6 +1,5 @@
 package com.dolgantsev.androindfirstproject.utils
 
-import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import android.view.View
@@ -13,12 +12,10 @@ object AnimationHelper {
     // Это переменная для того, чтобы круг проявления расходился именно от иконки меню навигации
     private const val menuItems = 5
 
-    // В метод у нас приходит 3 параметра:
-    // 1 - наше rootView, которое одновременно является и контейнером
-    // и объектом анимации
-    // 2 - активити для того, чтобы вернуть выполнение нового треда в UI поток
-    // 3 - позиция в меню навигации, чтобы круг проявления расходился именно от иконки меню навигации
-    fun performFragmentCircularRevealAnimation(rootView: View, activity: Activity, position: Int) {
+    // В метод у нас теперь приходит 2 параметра:
+    // 1 - наше rootView, которое одновременно является и контейнером и объектом анимации
+    // 2 - позиция в меню навигации, чтобы круг проявления расходился именно от иконки меню навигации
+    fun performFragmentCircularRevealAnimation(rootView: View, position: Int) {
         // Создаем Handler для выполнения задач в главном потоке
         val handler = Handler(Looper.getMainLooper())
 
