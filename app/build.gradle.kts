@@ -65,7 +65,10 @@ dependencies {
     implementation(libs.javax.inject)
     implementation(libs.swipe.refresh)
     implementation(libs.kotlinx.metadata.jvm)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
 
+    kapt(libs.room.compiler)
     kapt(libs.glide.compiler)
     kapt(libs.dagger.compiler)
 

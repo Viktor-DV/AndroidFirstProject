@@ -33,6 +33,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COLUMN_TITLE = "title"
         const val COLUMN_POSTER = "poster_path"
         const val COLUMN_DESCRIPTION = "overview"
-        const val COLUMN_RATING = "vote_average"
+        const val COLUMN_RATING = "rating"
     }
 }

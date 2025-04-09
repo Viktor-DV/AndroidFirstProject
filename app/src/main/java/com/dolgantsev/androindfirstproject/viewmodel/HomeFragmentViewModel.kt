@@ -1,60 +1,69 @@
 package com.dolgantsev.androindfirstproject.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.domain.Interactor
+import com.dolgantsev.androindfirstproject.utils.SingleLiveEvent
 import javax.inject.Inject
 
 class HomeFragmentViewModel : ViewModel() {
-    val filmsListLiveData: MutableLiveData<List<Film>> = MutableLiveData()
+
+    val showProgressBar: MutableLiveData<Boolean> = MutableLiveData()
+
+    val filmsListLiveData: LiveData<List<Film>>
+
+    val errorEvent = SingleLiveEvent<String>()
 
     @Inject
     lateinit var interactor: Interactor
 
     init {
         App.instance.dagger.inject(this)
+        filmsListLiveData = interactor.getFilmsFromDB() // Инициализация LiveData из БД
         getFilms()
     }
 
     fun getFilms() {
+        showProgressBar.postValue(true)
         interactor.getFilmsFromApi(1, object : ApiCallback {
-            override fun onSuccess(films: List<Film>) {
-                filmsListLiveData.postValue(films)
+            override fun onSuccess() {
+                showProgressBar.postValue(false)
             }
 
             override fun onFailure() {
-                filmsListLiveData.postValue(interactor.getFilmsFromDB())
+                showProgressBar.postValue(false)
+                errorEvent.call("Ошибка загрузки данных с сервера") // Отправляем событие ошибки
             }
         })
     }
 
-    // Пример: обновление фильма
+    // обновление фильма
     fun updateFilm(film: Film) {
         interactor.updateFilm(film)
-        getFilms() // Перезагрузка списка после обновления
+        getFilms()
     }
 
-    // Пример: удаление фильма
+    // удаление фильма
     fun deleteFilm(title: String) {
         interactor.deleteFilm(title)
-        getFilms() // Перезагрузка списка после удаления
+        getFilms()
     }
 
-    // Пример: получение фильмов с рейтингом выше 7.0
+    // получение фильмов с рейтингом выше 7.0
     fun getHighRatedFilms() {
-        filmsListLiveData.postValue(interactor.getFilmsByRating(7.0))
+        interactor.getFilmsByRating(7.0)
     }
 
-    // Пример: получение фильма по названию
+    // получение фильма по названию
     fun getFilmByTitle(title: String) {
-        val film = interactor.getFilmByTitle(title)
-        film?.let { filmsListLiveData.postValue(listOf(it)) }
+        interactor.getFilmByTitle(title)
     }
 
     interface ApiCallback {
-        fun onSuccess(films: List<Film>)
+        fun onSuccess()
         fun onFailure()
     }
 }

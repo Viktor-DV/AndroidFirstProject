@@ -33,6 +33,7 @@
             android:id="@+id/main_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:contentDescription="@string/film_list_description"
             tools:listitem="@layout/film_item"
             android:layout_margin="8dp"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -43,6 +44,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="8dp"
+        style="?android:attr/buttonBarStyle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
@@ -52,7 +54,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="High Rated"
+            android:contentDescription="@string/button_high_rated"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_marginEnd="4dp"/>
 
         <Button
@@ -60,7 +63,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Update"
+            android:contentDescription="@string/button_update"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_marginEnd="4dp"/>
 
         <Button
@@ -68,7 +72,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Delete"/>
+            android:contentDescription="@string/button_delete"
+            style="?android:attr/buttonBarButtonStyle"/>
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:visibility="invisible"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -15,6 +15,10 @@
     <string name="radio_button_upcoming">Скоро</string>
     <string name="radio_button_playing">В кинотеатрах</string>
     <string name="radio_group_header">Подборка на главном экране:</string>
+    <string name="film_list_description">Список фильмов</string>
+    <string name="button_high_rated">Рйтинговое</string>
+    <string name="button_update">Обновить</string>
+    <string name="button_delete">Удалить</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 

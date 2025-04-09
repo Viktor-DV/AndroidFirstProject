@@ -1,5 +1,6 @@
 package com.dolgantsev.androindfirstproject.domain
 
+import androidx.lifecycle.LiveData
 import com.dolgantsev.androindfirstproject.api.APIKEY
 import com.dolgantsev.androindfirstproject.api.TmdbApi
 import com.dolgantsev.androindfirstproject.data.dto.MainRepository
@@ -22,7 +23,7 @@ class Interactor(
                 override fun onResponse(call: Call<TmdbResultsDto>, response: Response<TmdbResultsDto>) {
                     val list = Converter.convertApiListToDtoList(response.body()?.tmdbFilms)
                     list.forEach { repo.putToDb(it) }
-                    callback.onSuccess(list)
+                    callback.onSuccess()
                 }
 
                 override fun onFailure(call: Call<TmdbResultsDto>, t: Throwable) {
@@ -31,7 +32,7 @@ class Interactor(
             })
     }
 
-    fun getFilmsFromDB(): List<Film> = repo.getAllFromDB()
+    fun getFilmsFromDB(): LiveData<List<Film>> = repo.getAllFromDB()
 
     fun updateFilm(film: Film) = repo.updateFilm(film)
 
