@@ -13,14 +13,24 @@ class MainRepository @Inject constructor(
     private val tmdbApi: TmdbApi
 ) {
 
-    suspend fun getFilmsFromApi(page: Int, category: String?): List<Film> = withContext(Dispatchers.IO) {
-        val response = tmdbApi.getFilms(
-            category ?: "popular",
-            APIKEY.KEY,
-            "ru-RU",
-            page
-        )
-        response.body()?.films?.map { it.toFilm() } ?: emptyList() // Исправили results на films
+    suspend fun getFilmsFromApi(page: Int, category: String?): Result<List<Film>> = withContext(Dispatchers.IO) {
+        try {
+            val response = tmdbApi.getFilms(
+                category ?: "popular",
+                APIKEY.KEY,
+                "ru-RU",
+                page
+            )
+            if (response.isSuccessful) {
+                // val films = response.body()?.results?.map { it.toFilm() } ?: emptyList<Film>()
+                val films = emptyList<Film>() // Временная заглушка
+                Result.success(films)
+            } else {
+                Result.failure(Exception("API error: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun putToDb(film: Film) = withContext(Dispatchers.IO) {

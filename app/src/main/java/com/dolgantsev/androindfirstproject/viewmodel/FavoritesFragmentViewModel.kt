@@ -12,21 +12,24 @@ import javax.inject.Inject
 
 class FavoritesFragmentViewModel : ViewModel() {
 
-    private val _favoritesList = MutableStateFlow<List<Film>>(emptyList())
-    val favoritesList: StateFlow<List<Film>> get() = _favoritesList
+    private val _favoritesFilms = MutableStateFlow<List<Film>>(emptyList())
+    val favoritesFilms: StateFlow<List<Film>> get() = _favoritesFilms
 
     @Inject
     lateinit var interactor: Interactor
 
     init {
         App.instance.dagger.inject(this)
-        loadFavorites()
     }
 
-    fun loadFavorites() {
+    fun getFavorites() {
         viewModelScope.launch {
-            val allFilms = interactor.getFilmsFromDB()
-            _favoritesList.value = allFilms.filter { it.isInFavorites }
+            interactor.getFilmsFromDB().onSuccess { films ->
+                val favorites = films.filter { it.isInFavorites }
+                _favoritesFilms.value = favorites
+            }.onFailure { e ->
+                _favoritesFilms.value = emptyList()
+            }
         }
     }
 }

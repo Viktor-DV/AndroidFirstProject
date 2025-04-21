@@ -20,13 +20,16 @@ class SavedFragmentViewModel : ViewModel() {
 
     init {
         App.instance.dagger.inject(this)
-        loadSavedFilms()
     }
 
-    fun loadSavedFilms() {
+    fun getSaved() {
         viewModelScope.launch {
-            val allFilms = interactor.getFilmsFromDB()
-            _savedFilms.value = allFilms.filter { it.isSaved }
+            interactor.getFilmsFromDB().onSuccess { films ->
+                val saved = films.filter { it.isSaved }
+                _savedFilms.value = saved
+            }.onFailure { e ->
+                _savedFilms.value = emptyList()
+            }
         }
     }
 }

@@ -11,8 +11,13 @@ class Interactor @Inject constructor(
         return repository.getFilmsFromApi(page, category)
     }
 
-    suspend fun getFilmsFromDB(): List<Film> {
-        return repository.getAllFromDB()
+    suspend fun getFilmsFromDB(): Result<List<Film>> {
+        return try {
+            val films = repository.getAllFromDB()
+            Result.success(films)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun updateFilm(film: Film) {
