@@ -22,8 +22,7 @@ class MainRepository @Inject constructor(
                 page
             )
             if (response.isSuccessful) {
-                // val films = response.body()?.results?.map { it.toFilm() } ?: emptyList<Film>()
-                val films = emptyList<Film>() // Временная заглушка
+                val films = response.body()?.results?.map { tmdbFilm -> tmdbFilm.toFilm() } ?: emptyList<Film>()
                 Result.success(films)
             } else {
                 Result.failure(Exception("API error: ${response.code()}"))

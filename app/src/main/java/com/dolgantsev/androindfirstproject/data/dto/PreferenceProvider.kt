@@ -2,31 +2,31 @@ package com.dolgantsev.androindfirstproject.data.dto
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.core.content.edit
 
 class PreferenceProvider(context: Context) {
-    private val appContext = context.applicationContext
-    private val preference: SharedPreferences = appContext.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    init {
-        if (preference.getBoolean(KEY_FIRST_LAUNCH, true)) {
-            preference.edit { putString(KEY_DEFAULT_CATEGORY, DEFAULT_CATEGORY) }
-            preference.edit { putBoolean(KEY_FIRST_LAUNCH, false) }
-        }
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+
+    fun saveCategory(category: String) {
+        sharedPreferences.edit().putString(CATEGORY_KEY, category).apply()
     }
 
-    fun saveDefaultCategory(category: String) {
-        preference.edit { putString(KEY_DEFAULT_CATEGORY, category) }
+    fun getCategory(): String {
+        return sharedPreferences.getString(CATEGORY_KEY, "popular") ?: "popular"
     }
 
-    fun getDefaultCategory(): String {
-        return preference.getString(KEY_DEFAULT_CATEGORY, DEFAULT_CATEGORY) ?: DEFAULT_CATEGORY
+    // Добавляем методы для регистрации и снятия слушателя
+    fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
     }
 
     companion object {
-        private const val KEY_FIRST_LAUNCH = "first_launch"
-        private const val KEY_DEFAULT_CATEGORY = "default_category"
-        private const val DEFAULT_CATEGORY = "popular"
-        const val CATEGORY_KEY = KEY_DEFAULT_CATEGORY
+        private const val PREFERENCES_NAME = "film_preferences"
+        const val CATEGORY_KEY = "category_key"
     }
 }

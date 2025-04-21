@@ -1,27 +1,37 @@
 package com.dolgantsev.androindfirstproject.di.moduls
 
 import android.content.Context
-import com.dolgantsev.androindfirstproject.api.TmdbApi
+import androidx.room.Room
+import com.dolgantsev.androindfirstproject.data.dao.FilmDao
+import com.dolgantsev.androindfirstproject.data.db.AppDatabase
 import com.dolgantsev.androindfirstproject.data.dto.MainRepository
-import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider
 import com.dolgantsev.androindfirstproject.domain.Interactor
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-//Передаем контекст для SharedPreferences через конструктор
-class DomainModule(val context: Context) {
-    //Нам нужно контекст как-то провайдить, поэтому создаем такой метод
-    @Provides
-    fun provideContext() = context
+class DomainModule {
 
-    @Singleton
     @Provides
-    //Создаем экземпляр SharedPreferences
-    fun providePreferences(context: Context) = PreferenceProvider(context)
+    @Singleton
+    fun provideAppDatabase(context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "film_database"
+        ).build()
+    }
 
-    @Singleton
     @Provides
-    fun provideInteractor(repository: MainRepository, tmdbApi: TmdbApi, preferenceProvider: PreferenceProvider) = Interactor(repo = repository, retrofitService = tmdbApi, preferences = preferenceProvider)
+    @Singleton
+    fun provideFilmDao(database: AppDatabase): FilmDao {
+        return database.filmDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideInteractor(repository: MainRepository): Interactor {
+        return Interactor(repository)
+    }
 }
