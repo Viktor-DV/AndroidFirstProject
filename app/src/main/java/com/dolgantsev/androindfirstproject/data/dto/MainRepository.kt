@@ -1,43 +1,37 @@
 package com.dolgantsev.androindfirstproject.data.dto
 
-import androidx.lifecycle.LiveData
 import com.dolgantsev.androindfirstproject.data.dao.FilmDao
 import com.dolgantsev.androindfirstproject.domain.Film
-import java.util.concurrent.Executors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainRepository(private val filmDao: FilmDao) {
 
-    fun putToDb(film: Film) {
-        Executors.newSingleThreadExecutor().execute {
-            filmDao.insert(film)
-        }
+    suspend fun putToDb(film: Film) = withContext(Dispatchers.IO) {
+        filmDao.insert(film)
     }
 
-    fun putToDb(films: List<Film>) {
-        Executors.newSingleThreadExecutor().execute {
-            filmDao.insertAll(films)
-        }
+    suspend fun putToDb(films: List<Film>) = withContext(Dispatchers.IO) {
+        filmDao.insertAll(films)
     }
 
-    fun getAllFromDB(): LiveData<List<Film>> = filmDao.getCachedFilms()
-
-    fun updateFilm(film: Film) {
-        Executors.newSingleThreadExecutor().execute {
-            filmDao.update(film)
-        }
+    suspend fun getAllFromDB(): List<Film> = withContext(Dispatchers.IO) {
+        filmDao.getCachedFilms()
     }
 
-    fun deleteFilm(title: String) {
-        Executors.newSingleThreadExecutor().execute {
-            filmDao.deleteByTitle(title)
-        }
+    suspend fun updateFilm(film: Film) = withContext(Dispatchers.IO) {
+        filmDao.update(film)
     }
 
-    fun getFilmsByRating(minRating: Double): List<Film> {
-        return filmDao.getFilmsByRating(minRating)
+    suspend fun deleteFilm(title: String) = withContext(Dispatchers.IO) {
+        filmDao.deleteByTitle(title)
     }
 
-    fun getFilmByTitle(title: String): Film? {
-        return filmDao.getFilmByTitle(title)
+    suspend fun getFilmsByRating(minRating: Double): List<Film> = withContext(Dispatchers.IO) {
+        filmDao.getFilmsByRating(minRating)
+    }
+
+    suspend fun getFilmByTitle(title: String): Film? = withContext(Dispatchers.IO) {
+        filmDao.getFilmByTitle(title)
     }
 }

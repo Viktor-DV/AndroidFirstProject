@@ -5,13 +5,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.dolgantsev.androindfirstproject.MainActivity
 import com.dolgantsev.androindfirstproject.databinding.FragmentCollectionsBinding
+import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.utils.AnimationHelper
+import com.dolgantsev.androindfirstproject.view.rv_adapters.CollectionsAdapter
+import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
+import com.dolgantsev.androindfirstproject.viewmodel.CollectionsFragmentViewModel
+import kotlinx.coroutines.launch
 
 class CollectionsFragment : Fragment() {
 
     private var _binding: FragmentCollectionsBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: CollectionsFragmentViewModel by viewModels()
+    private lateinit var collectionsAdapter: CollectionsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,7 +38,26 @@ class CollectionsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 4)
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 4)
+
+        collectionsAdapter = CollectionsAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
+            override fun click(film: Film) {
+                (requireActivity() as MainActivity).launchDetailsFragment(film)
+            }
+        })
+
+        binding.collectionsRecycler.apply {
+            adapter = collectionsAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.collections.collect { collections ->
+                    collectionsAdapter.submitCollections(collections)
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

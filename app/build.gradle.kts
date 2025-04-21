@@ -67,6 +67,10 @@ dependencies {
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.fragment.ktx)
 
     kapt(libs.room.compiler)
     kapt(libs.glide.compiler)

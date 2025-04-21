@@ -1,19 +1,23 @@
 package com.dolgantsev.androindfirstproject.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.domain.Interactor
 import com.dolgantsev.androindfirstproject.utils.SingleLiveEvent
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class HomeFragmentViewModel : ViewModel() {
 
-    val showProgressBar: MutableLiveData<Boolean> = MutableLiveData()
+    private val _showProgressBar = MutableStateFlow(false)
+    val showProgressBar: StateFlow<Boolean> get() = _showProgressBar
 
-    val filmsListLiveData: LiveData<List<Film>>
+    private val _filmsList = MutableStateFlow<List<Film>>(emptyList())
+    val filmsList: StateFlow<List<Film>> get() = _filmsList
 
     val errorEvent = SingleLiveEvent<String>()
 
@@ -22,48 +26,56 @@ class HomeFragmentViewModel : ViewModel() {
 
     init {
         App.instance.dagger.inject(this)
-        filmsListLiveData = interactor.getFilmsFromDB() // Инициализация LiveData из БД
+        loadFilmsFromDb()
         getFilms()
     }
 
     fun getFilms() {
-        showProgressBar.postValue(true)
-        interactor.getFilmsFromApi(1, object : ApiCallback {
-            override fun onSuccess() {
-                showProgressBar.postValue(false)
+        viewModelScope.launch {
+            _showProgressBar.value = true
+            val result = interactor.getFilmsFromApi(1, null) // Явно передаём null для использования категории из настроек
+            _showProgressBar.value = false
+            result.onSuccess { films ->
+                _filmsList.value = films
+            }.onFailure {
+                errorEvent.postCall("Ошибка загрузки данных с сервера")
             }
-
-            override fun onFailure() {
-                showProgressBar.postValue(false)
-                errorEvent.call("Ошибка загрузки данных с сервера") // Отправляем событие ошибки
-            }
-        })
+        }
     }
 
-    // обновление фильма
+    private fun loadFilmsFromDb() {
+        viewModelScope.launch {
+            _filmsList.value = interactor.getFilmsFromDB()
+        }
+    }
+
     fun updateFilm(film: Film) {
-        interactor.updateFilm(film)
-        getFilms()
+        viewModelScope.launch {
+            interactor.updateFilm(film)
+            loadFilmsFromDb()
+        }
     }
 
-    // удаление фильма
     fun deleteFilm(title: String) {
-        interactor.deleteFilm(title)
-        getFilms()
+        viewModelScope.launch {
+            interactor.deleteFilm(title)
+            loadFilmsFromDb()
+        }
     }
 
-    // получение фильмов с рейтингом выше 7.0
     fun getHighRatedFilms() {
-        interactor.getFilmsByRating(7.0)
+        viewModelScope.launch {
+            val films = interactor.getFilmsByRating(7.0)
+            _filmsList.value = films
+        }
     }
 
-    // получение фильма по названию
     fun getFilmByTitle(title: String) {
-        interactor.getFilmByTitle(title)
-    }
-
-    interface ApiCallback {
-        fun onSuccess()
-        fun onFailure()
+        viewModelScope.launch {
+            val film = interactor.getFilmByTitle(title)
+            if (film != null) {
+                _filmsList.value = listOf(film)
+            }
+        }
     }
 }

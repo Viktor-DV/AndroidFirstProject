@@ -1,40 +1,37 @@
 package com.dolgantsev.androindfirstproject.viewmodel
 
-import android.content.SharedPreferences
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider
 import com.dolgantsev.androindfirstproject.domain.Interactor
+import com.dolgantsev.androindfirstproject.utils.asFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class SettingsFragmentViewModel : ViewModel(), SharedPreferences.OnSharedPreferenceChangeListener {
+class SettingsFragmentViewModel : ViewModel() {
     @Inject
     lateinit var interactor: Interactor
-    val categoryPropertyLiveData: MutableLiveData<String> = MutableLiveData()
+
+    private val _categoryProperty = MutableStateFlow<String?>(null)
+    val categoryProperty: StateFlow<String?> get() = _categoryProperty
 
     init {
         App.instance.dagger.inject(this)
-        getCategoryProperty()
-        App.instance.preferences.registerListener(this)
+        observeCategoryChanges()
     }
 
-    private fun getCategoryProperty() {
-        categoryPropertyLiveData.value = interactor.getDefaultCategoryFromPreferences()
+    private fun observeCategoryChanges() {
+        viewModelScope.launch {
+            App.instance.preferences.asFlow(PreferenceProvider.CATEGORY_KEY).collect { category ->
+                _categoryProperty.value = category
+            }
+        }
     }
 
     fun putCategoryProperty(category: String) {
         interactor.saveDefaultCategoryToPreferences(category)
-    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (key == PreferenceProvider.CATEGORY_KEY) {
-            getCategoryProperty()
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        App.instance.preferences.unregisterListener(this)
     }
 }
