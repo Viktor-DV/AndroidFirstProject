@@ -17,6 +17,7 @@ import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 import com.dolgantsev.androindfirstproject.view.rv_adapters.CollectionsAdapter
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
 import com.dolgantsev.androindfirstproject.viewmodel.CollectionsFragmentViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class CollectionsFragment : Fragment() {
@@ -29,16 +30,13 @@ class CollectionsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentCollectionsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 4)
 
         collectionsAdapter = CollectionsAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
             override fun click(film: Film) {
@@ -58,6 +56,19 @@ class CollectionsFragment : Fragment() {
                 }
             }
         }
+
+        // Добавляем наблюдение за errorEvent
+        viewModel.errorEvent.observe(viewLifecycleOwner) { errorMessage ->
+            errorMessage?.let {
+                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+            }
+        }
+
+        // Проверяем анимацию
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.collectionsRecycler, 4)
+
+        // Добавляем вызов loadCollections
+        viewModel.loadCollections()
     }
 
     override fun onDestroyView() {

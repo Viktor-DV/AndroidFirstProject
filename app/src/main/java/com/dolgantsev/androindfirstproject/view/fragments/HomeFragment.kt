@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -17,10 +16,13 @@ import com.dolgantsev.androindfirstproject.databinding.FragmentHomeBinding
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
+import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpacingItemDecoration
 import com.dolgantsev.androindfirstproject.viewmodel.HomeFragmentViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
+
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HomeFragmentViewModel by viewModels()
@@ -37,9 +39,6 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 1)
-
         filmsAdapter = FilmListRecyclerAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
             override fun click(film: Film) {
                 (requireActivity() as MainActivity).launchDetailsFragment(film)
@@ -49,18 +48,9 @@ class HomeFragment : Fragment() {
         binding.mainRecycler.apply {
             adapter = filmsAdapter
             layoutManager = LinearLayoutManager(requireContext())
+            addItemDecoration(TopSpacingItemDecoration(8))
         }
 
-        // Наблюдаем за прогресс-баром
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.showProgressBar.collect { isVisible ->
-                    binding.progressBar.isVisible = isVisible
-                }
-            }
-        }
-
-        // Наблюдаем за списком фильмов
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.filmsList.collect { films ->
@@ -69,62 +59,22 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Наблюдаем за ошибками
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.errorEvent.observe(viewLifecycleOwner) { errorMessage ->
-                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                viewModel.showProgressBar.collect { show ->
+                    binding.progressBar.isVisible = show
                 }
             }
         }
 
-        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                query?.let {
-                    if (it.isNotEmpty()) {
-                        viewModel.getFilmByTitle(it)
-                    }
-                }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return false
-            }
-        })
-
-        binding.pullToRefresh.setOnRefreshListener {
-            viewModel.getFilms()
-            binding.pullToRefresh.isRefreshing = false
-        }
-
-        binding.highRatedButton.setOnClickListener {
-            viewModel.getHighRatedFilms()
-        }
-
-        binding.updateButton.setOnClickListener {
-            val currentFilms = filmsAdapter.getCurrentList()
-            if (currentFilms.isNotEmpty()) {
-                val filmToUpdate = currentFilms[0].copy(
-                    poster = "updated_poster_url",
-                    description = "Updated description",
-                    rating = 8.5
-                )
-                viewModel.updateFilm(filmToUpdate)
+        viewModel.errorEvent.observe(viewLifecycleOwner) { errorMessage ->
+            errorMessage?.let {
+                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
             }
         }
 
-        binding.deleteButton.setOnClickListener {
-            val currentFilms = filmsAdapter.getCurrentList()
-            if (currentFilms.isNotEmpty()) {
-                viewModel.deleteFilm(currentFilms[0].title)
-            }
-        }
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.mainRecycler, 1)
 
-        viewModel.getFilms()
-    }
-
-    fun updateMoviesList() {
         viewModel.getFilms()
     }
 

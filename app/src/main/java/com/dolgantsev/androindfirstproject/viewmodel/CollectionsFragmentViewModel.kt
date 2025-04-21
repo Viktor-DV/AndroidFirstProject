@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.domain.Interactor
+import com.dolgantsev.androindfirstproject.utils.SingleLiveEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,9 +19,11 @@ class CollectionsFragmentViewModel : ViewModel() {
     @Inject
     lateinit var interactor: Interactor
 
+    private val _errorEvent = SingleLiveEvent<String>()
+    val errorEvent: SingleLiveEvent<String> get() = _errorEvent
+
     init {
         App.instance.dagger.inject(this)
-        loadCollections()
     }
 
     fun loadCollections() {
@@ -28,8 +31,12 @@ class CollectionsFragmentViewModel : ViewModel() {
             val categories = listOf("popular", "top_rated", "upcoming", "now_playing")
             val collectionsMap = mutableMapOf<String, List<Film>>()
             categories.forEach { category ->
-                val films = interactor.getFilmsFromApi(page = 1, category = category).getOrDefault(emptyList())
-                collectionsMap[category] = films
+                val result = interactor.getFilmsFromApi(page = 1, category = category)
+                result.onSuccess { films ->
+                    collectionsMap[category] = films
+                }.onFailure {
+                    _errorEvent.postValue("Ошибка загрузки данных для категории: $category")
+                }
             }
             _collections.value = collectionsMap
         }

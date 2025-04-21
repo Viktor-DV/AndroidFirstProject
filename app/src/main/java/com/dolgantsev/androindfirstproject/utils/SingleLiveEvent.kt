@@ -1,13 +1,16 @@
 package com.dolgantsev.androindfirstproject.utils
 
+import androidx.annotation.MainThread
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import java.util.concurrent.atomic.AtomicBoolean
 
-class SingleLiveEvent<T> : LiveData<T>() {
+class SingleLiveEvent<T> : MutableLiveData<T>() {
+
     private val pending = AtomicBoolean(false)
 
+    @MainThread
     override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {
         super.observe(owner) { t ->
             if (pending.compareAndSet(true, false)) {
@@ -16,17 +19,20 @@ class SingleLiveEvent<T> : LiveData<T>() {
         }
     }
 
+    @MainThread
     override fun setValue(t: T?) {
         pending.set(true)
         super.setValue(t)
     }
 
-    override fun postValue(t: T?) {
-        pending.set(true)
-        super.postValue(t)
+    @MainThread
+    fun call() {
+        value = null
     }
 
-    fun call(value: T) {
-        postValue(value)
+    // Переопределяем postValue с модификатором override
+    override fun postValue(value: T?) {
+        pending.set(true)
+        super.postValue(value)
     }
 }
