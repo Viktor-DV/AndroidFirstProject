@@ -4,7 +4,6 @@ import com.dolgantsev.androindfirstproject.api.APIKEY
 import com.dolgantsev.androindfirstproject.api.TmdbApi
 import com.dolgantsev.androindfirstproject.data.dao.FilmDao
 import com.dolgantsev.androindfirstproject.data.dto.TmdbFilm
-import com.dolgantsev.androindfirstproject.data.dto.TmdbResultsDto
 import com.dolgantsev.androindfirstproject.domain.Film
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,28 +13,17 @@ class MainRepository @Inject constructor(
     private val filmDao: FilmDao,
     private val tmdbApi: TmdbApi
 ) {
-
     suspend fun getFilmsFromApi(page: Int, category: String?): Result<List<Film>> = withContext(Dispatchers.IO) {
         try {
-            val response = tmdbApi.getFilms(
-                category ?: "popular",
-                APIKEY.KEY,
-                "ru-RU",
-                page
+            val response = tmdbApi.getPopularMovies(
+                apiKey = APIKEY.KEY,
+                language = "ru-RU",
+                page = page
             )
-            if (response.isSuccessful) {
-                val body: TmdbResultsDto? = response.body()
-                val films: List<Film> = if (body != null && body.results != null) {
-                    body.results.map { tmdbFilm: TmdbFilm ->
-                        tmdbFilm.toFilm()
-                    }
-                } else {
-                    emptyList()
-                }
-                Result.success(films)
-            } else {
-                Result.failure(Exception("API error: ${response.code()}"))
+            val films = response.results.map { tmdbFilm ->
+                tmdbFilm.toFilm()
             }
+            Result.success(films)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -67,5 +55,17 @@ class MainRepository @Inject constructor(
 
     suspend fun getFilmByTitle(title: String): Film? = withContext(Dispatchers.IO) {
         filmDao.getFilmByTitle(title)
+    }
+
+    private fun TmdbFilm.toFilm(): Film {
+        return Film(
+            id = id,
+            title = title,
+            overview = overview,
+            posterPath = posterPath,
+            rating = voteAverage,
+            isInFavorites = false,
+            isSaved = false
+        )
     }
 }

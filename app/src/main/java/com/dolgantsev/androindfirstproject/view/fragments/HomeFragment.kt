@@ -6,32 +6,32 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.MainActivity
 import com.dolgantsev.androindfirstproject.databinding.FragmentHomeBinding
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
-import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpaceItemDecoration
+import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpacingItemDecoration
 import com.dolgantsev.androindfirstproject.viewmodel.HomeFragmentViewModel
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
-    private lateinit var binding: FragmentHomeBinding
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
     private lateinit var filmsAdapter: FilmListRecyclerAdapter
-    private val viewModel by lazy {
-        ViewModelProvider(this)[HomeFragmentViewModel::class.java]
-    }
+    private val viewModel: HomeFragmentViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentHomeBinding.inflate(inflater, container, false)
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -44,15 +44,19 @@ class HomeFragment : Fragment() {
 
         // Наблюдаем за списком фильмов
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.filmsList.collect { films ->
-                filmsAdapter.addItems(films)
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                viewModel.filmsList.collect { films ->
+                    filmsAdapter.submitList(films)
+                }
             }
         }
 
         // Наблюдаем за прогресс-баром
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.showProgressBar.collect { isVisible ->
-                binding.progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                viewModel.showProgressBar.collect { isVisible ->
+                    binding.progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
+                }
             }
         }
 
@@ -64,12 +68,16 @@ class HomeFragment : Fragment() {
         // Обработка поиска
         binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                // Здесь можно реализовать поиск фильмов по запросу
+                if (query != null) {
+                    viewModel.searchFilms(query)
+                }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                // Можно реализовать фильтрацию списка фильмов в реальном времени
+                if (newText != null) {
+                    viewModel.searchFilms(newText)
+                }
                 return true
             }
         })
@@ -82,8 +90,7 @@ class HomeFragment : Fragment() {
 
         // Обработка кнопок
         binding.highRatedButton.setOnClickListener {
-            // Фильтрация фильмов с высоким рейтингом (например, рейтинг > 7)
-            Toast.makeText(requireContext(), "Фильтрация по высокому рейтингу", Toast.LENGTH_SHORT).show()
+            viewModel.filterHighRatedFilms()
         }
 
         binding.updateButton.setOnClickListener {
@@ -91,8 +98,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.deleteButton.setOnClickListener {
-            // Удаление фильмов (например, очистка кэша)
-            Toast.makeText(requireContext(), "Удаление фильмов", Toast.LENGTH_SHORT).show()
+            viewModel.clearFilms()
         }
 
         viewModel.getFilms()
@@ -109,12 +115,17 @@ class HomeFragment : Fragment() {
             )
             adapter = filmsAdapter
             layoutManager = LinearLayoutManager(requireContext())
-            val decorator = TopSpaceItemDecoration(8)
+            val decorator = TopSpacingItemDecoration(8)
             addItemDecoration(decorator)
         }
     }
 
     fun updateMoviesList() {
         viewModel.getFilms()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

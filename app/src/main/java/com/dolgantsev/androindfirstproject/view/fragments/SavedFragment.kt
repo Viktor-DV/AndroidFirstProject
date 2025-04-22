@@ -29,7 +29,7 @@ class SavedFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentSavedBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -49,8 +49,8 @@ class SavedFragment : Fragment() {
             addItemDecoration(TopSpacingItemDecoration(8))
         }
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.savedFilms.collect { films ->
                     filmsAdapter.submitList(films)
                 }
@@ -58,7 +58,10 @@ class SavedFragment : Fragment() {
         }
 
         // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 2)
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 2)
+
+        // Загружаем сохранённые фильмы
+        viewModel.getSaved()
     }
 
     override fun onDestroyView() {

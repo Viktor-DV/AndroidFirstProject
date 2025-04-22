@@ -9,7 +9,7 @@ import com.dolgantsev.androindfirstproject.di.DaggerAppComponent
 class App : Application() {
 
     lateinit var dagger: AppComponent
-    lateinit var preferences: PreferenceProvider // Добавляем свойство preferences
+    val preferences: PreferenceProvider by lazy { PreferenceProvider(applicationContext) } // Используем lazy
 
     companion object {
         lateinit var instance: App
@@ -19,10 +19,9 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        preferences = PreferenceProvider(this) // Инициализируем PreferenceProvider
         dagger = DaggerAppComponent.builder()
             .appDependencies(object : AppDependencies {
-                override fun context() = this@App
+                override fun context() = applicationContext // Используем applicationContext
             })
             .build()
     }

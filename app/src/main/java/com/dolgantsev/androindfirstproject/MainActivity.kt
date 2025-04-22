@@ -2,13 +2,11 @@ package com.dolgantsev.androindfirstproject
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
 import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider.Companion.CATEGORY_KEY
@@ -20,6 +18,8 @@ import com.dolgantsev.androindfirstproject.view.fragments.FavoritesFragment
 import com.dolgantsev.androindfirstproject.view.fragments.HomeFragment
 import com.dolgantsev.androindfirstproject.view.fragments.SavedFragment
 import com.dolgantsev.androindfirstproject.view.fragments.SettingsFragment
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -38,69 +38,80 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         startScreenAnimationView.repeatMode = LottieDrawable.RESTART
         startScreenAnimationView.playAnimation()
 
-        val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed({
+        // Используем корутины вместо Handler
+        lifecycleScope.launch {
+            delay(3000)
             startScreenAnimationView.visibility = View.GONE
 
             if (savedInstanceState == null) {
                 changeFragment(HomeFragment(), "home")
             }
-        }, 3000)
+        }
 
         val bottomNavigation = binding.bottomNavigation
         bottomNavigation.setOnItemSelectedListener { item ->
+            val currentFragment = supportFragmentManager.fragments.lastOrNull()
             when (item.itemId) {
                 R.id.home -> {
-                    val tag = "home"
-                    val fragment: Fragment = checkFragmentExistence(tag) ?: HomeFragment()
-                    changeFragment(fragment, tag)
+                    if (currentFragment !is HomeFragment) {
+                        val tag = "home"
+                        val fragment: Fragment = checkFragmentExistence(tag) ?: HomeFragment()
+                        changeFragment(fragment, tag)
+                    }
                     true
                 }
                 R.id.favorites -> {
-                    val tag = "favorites"
-                    val fragment: Fragment = checkFragmentExistence(tag) ?: FavoritesFragment()
-                    changeFragment(fragment, tag)
+                    if (currentFragment !is FavoritesFragment) {
+                        val tag = "favorites"
+                        val fragment: Fragment = checkFragmentExistence(tag) ?: FavoritesFragment()
+                        changeFragment(fragment, tag)
+                    }
                     true
                 }
                 R.id.watch_later -> {
-                    val tag = "watch_later"
-                    val fragment: Fragment = checkFragmentExistence(tag) ?: SavedFragment()
-                    changeFragment(fragment, tag)
+                    if (currentFragment !is SavedFragment) {
+                        val tag = "watch_later"
+                        val fragment: Fragment = checkFragmentExistence(tag) ?: SavedFragment()
+                        changeFragment(fragment, tag)
+                    }
                     true
                 }
                 R.id.selections -> {
-                    val tag = "selections"
-                    val fragment: Fragment = checkFragmentExistence(tag) ?: CollectionsFragment()
-                    changeFragment(fragment, tag)
+                    if (currentFragment !is CollectionsFragment) {
+                        val tag = "selections"
+                        val fragment: Fragment = checkFragmentExistence(tag) ?: CollectionsFragment()
+                        changeFragment(fragment, tag)
+                    }
                     true
                 }
                 R.id.settings -> {
-                    val tag = "settings"
-                    val fragment: Fragment = checkFragmentExistence(tag) ?: SettingsFragment()
-                    changeFragment(fragment, tag)
+                    if (currentFragment !is SettingsFragment) {
+                        val tag = "settings"
+                        val fragment: Fragment = checkFragmentExistence(tag) ?: SettingsFragment()
+                        changeFragment(fragment, tag)
+                    }
                     true
                 }
                 else -> false
             }
         }
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        // Обработка нажатия "назад"
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (supportFragmentManager.backStackEntryCount > 0) {
+                if (supportFragmentManager.backStackEntryCount > 1) {
+                    supportFragmentManager.popBackStack() // Возвращаемся к предыдущему фрагменту
+                } else {
                     AlertDialog.Builder(this@MainActivity)
                         .setMessage("Вы уверены, что хотите покинуть приложение?")
                         .setCancelable(false)
                         .setPositiveButton("Да") { _, _ ->
-                            isEnabled = false
-                            onBackPressedDispatcher.onBackPressed()
+                            finish() // Завершаем активность
                         }
                         .setNegativeButton("Нет") { dialog, _ ->
                             dialog.dismiss()
                         }
                         .show()
-                } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
                 }
             }
         })

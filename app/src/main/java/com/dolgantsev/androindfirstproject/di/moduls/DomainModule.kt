@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.dolgantsev.androindfirstproject.data.dao.FilmDao
 import com.dolgantsev.androindfirstproject.data.db.AppDatabase
+import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider
 import com.dolgantsev.androindfirstproject.data.repository.MainRepository
 import com.dolgantsev.androindfirstproject.domain.Interactor
 import dagger.Module
@@ -31,7 +32,13 @@ class DomainModule {
 
     @Provides
     @Singleton
-    fun provideInteractor(repository: MainRepository): Interactor {
-        return Interactor(repository)
+    fun providePreferenceProvider(context: Context): PreferenceProvider {
+        return PreferenceProvider(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideInteractor(repository: MainRepository, preferenceProvider: PreferenceProvider): Interactor {
+        return Interactor(repository, preferenceProvider)
     }
 }

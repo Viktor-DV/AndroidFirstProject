@@ -19,8 +19,6 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.dolgantsev.androindfirstproject.R
 import com.dolgantsev.androindfirstproject.api.ApiConstants
-import com.dolgantsev.androindfirstproject.data.db.AppDatabase
-import com.dolgantsev.androindfirstproject.data.repository.MainRepository
 import com.dolgantsev.androindfirstproject.databinding.FragmentDetailsBinding
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.viewmodel.DetailsFragmentViewModel
@@ -44,19 +42,14 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Инициализируем репозиторий вручную
-        val dao = AppDatabase.getInstance(requireContext()).filmDao()
-        val repo = MainRepository(dao)
-        viewModel.initRepository(repo)
-
         val film: Film? = arguments?.getParcelable("film")
 
         if (film != null) {
             binding.title.text = film.title
-            binding.detailsDescription.text = film.description
+            binding.detailsDescription.text = film.overview // Исправлено: description → overview
 
             Glide.with(this)
-                .load(ApiConstants.IMAGES_URL + "w780" + film.poster)
+                .load(ApiConstants.IMAGES_URL + "w780" + film.posterPath) // Исправлено: poster → posterPath
                 .centerCrop()
                 .into(binding.detailsPoster)
 
@@ -82,7 +75,7 @@ class DetailsFragment : Fragment() {
             binding.detailsFabShare.setOnClickListener {
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "Check out this film: ${film.title}\n\n${film.description}")
+                    putExtra(Intent.EXTRA_TEXT, "Check out this film: ${film.title}\n\n${film.overview}") // Исправлено: description → overview
                     type = "text/plain"
                 }
                 startActivity(Intent.createChooser(intent, "Share To:"))
@@ -158,7 +151,7 @@ class DetailsFragment : Fragment() {
                 requireActivity().contentResolver,
                 bitmap,
                 film?.title?.handleSingleQuote(),
-                film?.description?.handleSingleQuote()
+                film?.overview?.handleSingleQuote() // Исправлено: description → overview
             )
         }
     }
@@ -174,7 +167,7 @@ class DetailsFragment : Fragment() {
         }
         lifecycleScope.launch {
             binding.progressBar.isVisible = true
-            val bitmap = viewModel.loadWallpaper(ApiConstants.IMAGES_URL + "original" + film?.poster, requireContext())
+            val bitmap = viewModel.loadWallpaper(ApiConstants.IMAGES_URL + "original" + film?.posterPath, requireContext()) // Исправлено: poster → posterPath
             saveToGallery(bitmap, film)
             Snackbar.make(
                 binding.root,

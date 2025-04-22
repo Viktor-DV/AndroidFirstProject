@@ -4,16 +4,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dolgantsev.androindfirstproject.R
 import com.dolgantsev.androindfirstproject.domain.Film
 
 class CollectionsAdapter(
     private val clickListener: FilmListRecyclerAdapter.OnItemClickListener
-) : RecyclerView.Adapter<CollectionsAdapter.CollectionViewHolder>() {
-
-    private var collections: List<Pair<String, List<Film>>> = emptyList()
+) : ListAdapter<Pair<String, List<Film>>, CollectionsAdapter.CollectionViewHolder>(CollectionDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CollectionViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.collection_item, parent, false)
@@ -21,15 +21,12 @@ class CollectionsAdapter(
     }
 
     override fun onBindViewHolder(holder: CollectionViewHolder, position: Int) {
-        val (category, films) = collections[position]
+        val (category, films) = getItem(position)
         holder.bind(category, films)
     }
 
-    override fun getItemCount(): Int = collections.size
-
     fun submitCollections(newCollections: Map<String, List<Film>>) {
-        collections = newCollections.toList()
-        notifyDataSetChanged()
+        submitList(newCollections.toList())
     }
 
     inner class CollectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -52,5 +49,15 @@ class CollectionsAdapter(
             }
             filmsAdapter.submitList(films)
         }
+    }
+}
+
+class CollectionDiffCallback : DiffUtil.ItemCallback<Pair<String, List<Film>>>() {
+    override fun areItemsTheSame(oldItem: Pair<String, List<Film>>, newItem: Pair<String, List<Film>>): Boolean {
+        return oldItem.first == newItem.first
+    }
+
+    override fun areContentsTheSame(oldItem: Pair<String, List<Film>>, newItem: Pair<String, List<Film>>): Boolean {
+        return oldItem == newItem
     }
 }

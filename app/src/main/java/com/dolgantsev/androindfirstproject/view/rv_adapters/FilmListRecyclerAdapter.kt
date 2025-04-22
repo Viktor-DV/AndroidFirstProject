@@ -31,8 +31,6 @@ class FilmListRecyclerAdapter(
         }
     }
 
-    fun getCurrentList(): List<Film> = currentList.toList()
-
     interface OnItemClickListener {
         fun click(film: Film)
     }

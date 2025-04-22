@@ -35,8 +35,8 @@ class SettingsFragment : Fragment() {
         AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 5)
 
         // Наблюдение за настройками
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.categoryProperty.collect { category ->
                     when (category) {
                         POPULAR_CATEGORY -> binding.radioGroup.check(R.id.radio_popular)

@@ -42,7 +42,7 @@ android {
         jvmTarget = "11"
     }
     dataBinding {
-        enable = true
+        enable = false
     }
     viewBinding {
         enable = true

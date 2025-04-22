@@ -50,8 +50,8 @@ class FavoritesFragment : Fragment() {
         }
 
         // Наблюдаем за списком избранных фильмов
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.favoritesList.collect { favorites ->
                     filmsAdapter.submitList(favorites)
                 }
@@ -59,7 +59,10 @@ class FavoritesFragment : Fragment() {
         }
 
         // Анимация
-        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, requireActivity(), 3)
+        AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 3)
+
+        // Загружаем избранные фильмы
+        viewModel.getFavorites()
     }
 
     override fun onDestroyView() {

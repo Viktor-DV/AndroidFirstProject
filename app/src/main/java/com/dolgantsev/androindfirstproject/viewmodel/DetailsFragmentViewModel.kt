@@ -4,21 +4,24 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import com.bumptech.glide.Glide
-import com.dolgantsev.androindfirstproject.data.repository.MainRepository
+import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.domain.Film
+import com.dolgantsev.androindfirstproject.domain.Interactor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 class DetailsFragmentViewModel : ViewModel() {
 
-    private var repository: MainRepository? = null
+    @Inject
+    lateinit var interactor: Interactor
 
-    fun initRepository(repo: MainRepository) {
-        repository = repo
+    init {
+        App.instance.dagger.inject(this)
     }
 
     suspend fun updateFilm(film: Film) {
-        repository?.updateFilm(film)
+        interactor.updateFilm(film)
     }
 
     suspend fun loadWallpaper(url: String, context: Context): Bitmap = withContext(Dispatchers.IO) {

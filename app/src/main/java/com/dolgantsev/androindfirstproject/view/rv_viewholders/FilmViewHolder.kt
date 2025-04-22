@@ -13,27 +13,21 @@ import com.dolgantsev.androindfirstproject.view.customviews.RatingDonutView
 class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val title: TextView = itemView.findViewById(R.id.title)
     private val poster: ImageView = itemView.findViewById(R.id.poster)
-    private val description: TextView = itemView.findViewById(R.id.description)
+    private val overview: TextView = itemView.findViewById(R.id.overview)
     private val ratingDonut: RatingDonutView = itemView.findViewById(R.id.rating_donut)
-
-    private var isAnimated = false
 
     fun bind(film: Film) {
         title.text = film.title
-        description.text = film.description
+        overview.text = film.overview
         Glide.with(itemView)
-            .load(ApiConstants.IMAGES_URL + "w342" + film.poster)
+            .load(ApiConstants.IMAGES_URL + "w342" + film.posterPath)
             .centerCrop()
-            .placeholder(R.drawable.ic_placeholder) // Добавляем placeholder
-            .error(R.drawable.ic_error) // Добавляем изображение для ошибки
+            .placeholder(R.drawable.ic_placeholder)
+            .error(R.drawable.ic_error)
             .into(poster)
 
-        if (!isAnimated) {
-            ratingDonut.setProgress(0)
-            ratingDonut.setProgress((film.rating * 10).toInt(), animate = true)
-            isAnimated = true
-        } else {
-            ratingDonut.setProgress((film.rating * 10).toInt(), animate = false)
-        }
+        // Анимация рейтинга при каждом bind
+        ratingDonut.setProgress(0)
+        ratingDonut.setProgress((film.rating * 10).toInt(), animate = true)
     }
 }
