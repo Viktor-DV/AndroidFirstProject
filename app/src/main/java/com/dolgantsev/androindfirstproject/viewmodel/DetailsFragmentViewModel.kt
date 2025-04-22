@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import com.bumptech.glide.Glide
-import com.dolgantsev.androindfirstproject.data.dto.MainRepository
+import com.dolgantsev.androindfirstproject.data.repository.MainRepository
 import com.dolgantsev.androindfirstproject.domain.Film
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

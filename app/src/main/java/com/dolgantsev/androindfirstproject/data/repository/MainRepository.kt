@@ -1,8 +1,10 @@
-package com.dolgantsev.androindfirstproject.data.dto
+package com.dolgantsev.androindfirstproject.data.repository
 
 import com.dolgantsev.androindfirstproject.api.APIKEY
 import com.dolgantsev.androindfirstproject.api.TmdbApi
 import com.dolgantsev.androindfirstproject.data.dao.FilmDao
+import com.dolgantsev.androindfirstproject.data.dto.TmdbFilm
+import com.dolgantsev.androindfirstproject.data.dto.TmdbResultsDto
 import com.dolgantsev.androindfirstproject.domain.Film
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -22,7 +24,14 @@ class MainRepository @Inject constructor(
                 page
             )
             if (response.isSuccessful) {
-                val films = response.body()?.results?.map { tmdbFilm -> tmdbFilm.toFilm() } ?: emptyList<Film>()
+                val body: TmdbResultsDto? = response.body()
+                val films: List<Film> = if (body != null && body.results != null) {
+                    body.results.map { tmdbFilm: TmdbFilm ->
+                        tmdbFilm.toFilm()
+                    }
+                } else {
+                    emptyList()
+                }
                 Result.success(films)
             } else {
                 Result.failure(Exception("API error: ${response.code()}"))

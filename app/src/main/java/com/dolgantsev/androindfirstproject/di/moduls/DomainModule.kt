@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.dolgantsev.androindfirstproject.data.dao.FilmDao
 import com.dolgantsev.androindfirstproject.data.db.AppDatabase
-import com.dolgantsev.androindfirstproject.data.dto.MainRepository
+import com.dolgantsev.androindfirstproject.data.repository.MainRepository
 import com.dolgantsev.androindfirstproject.domain.Interactor
 import dagger.Module
 import dagger.Provides

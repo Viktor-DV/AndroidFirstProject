@@ -1,6 +1,6 @@
 package com.dolgantsev.androindfirstproject.domain
 
-import com.dolgantsev.androindfirstproject.data.dto.MainRepository
+import com.dolgantsev.androindfirstproject.data.repository.MainRepository
 import javax.inject.Inject
 
 class Interactor @Inject constructor(

@@ -20,7 +20,7 @@ import com.bumptech.glide.Glide
 import com.dolgantsev.androindfirstproject.R
 import com.dolgantsev.androindfirstproject.api.ApiConstants
 import com.dolgantsev.androindfirstproject.data.db.AppDatabase
-import com.dolgantsev.androindfirstproject.data.dto.MainRepository
+import com.dolgantsev.androindfirstproject.data.repository.MainRepository
 import com.dolgantsev.androindfirstproject.databinding.FragmentDetailsBinding
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.viewmodel.DetailsFragmentViewModel

@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.dolgantsev.androindfirstproject.data.dao.FilmDao
 import com.dolgantsev.androindfirstproject.data.db.AppDatabase
-import com.dolgantsev.androindfirstproject.data.dto.MainRepository
+import com.dolgantsev.androindfirstproject.data.repository.MainRepository
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
