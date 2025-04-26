@@ -2,6 +2,9 @@ package com.dolgantsev.androindfirstproject.domain
 
 import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider
 import com.dolgantsev.androindfirstproject.data.repository.MainRepository
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Maybe
+import io.reactivex.rxjava3.core.Single
 import javax.inject.Inject
 
 class Interactor @Inject constructor(
@@ -9,24 +12,23 @@ class Interactor @Inject constructor(
     private val preferenceProvider: PreferenceProvider
 ) {
 
-    suspend fun getFilmsFromApi(page: Int, category: String?): Result<List<Film>> {
+    fun getFilmsFromApi(page: Int, category: String?): Single<List<Film>> {
         return repository.getFilmsFromApi(page, category)
     }
 
-    suspend fun getFilmsFromDB(): Result<List<Film>> {
-        return try {
-            val films = repository.getAllFromDB()
-            Result.success(films)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    fun getFilmsFromDB(): Single<List<Film>> {
+        return repository.getAllFromDB()
     }
 
-    suspend fun updateFilm(film: Film) {
-        repository.updateFilm(film)
+    fun updateFilm(film: Film): Completable {
+        return repository.updateFilm(film)
     }
 
     fun saveDefaultCategoryToPreferences(category: String) {
         preferenceProvider.saveCategory(category)
+    }
+
+    fun getFilmByTitle(title: String): Maybe<Film> {
+        return repository.getFilmByTitle(title)
     }
 }

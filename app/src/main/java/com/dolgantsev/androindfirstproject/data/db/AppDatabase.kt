@@ -12,17 +12,16 @@ import com.dolgantsev.androindfirstproject.domain.Film
 @Database(entities = [Film::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun filmDao(): FilmDao
-
     companion object {
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE cached_films ADD COLUMN is_saved INTEGER NOT NULL DEFAULT 0")
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE cached_films ADD COLUMN is_saved INTEGER NOT NULL DEFAULT 0")
             }
         }
 
-        val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("""
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
                     CREATE TABLE cached_films_temp (
                         id INTEGER PRIMARY KEY NOT NULL,
                         title TEXT NOT NULL,
@@ -34,15 +33,15 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                 """.trimIndent())
 
-                database.execSQL("""
+                db.execSQL("""
                     INSERT INTO cached_films_temp (title, poster_path, overview, rating, is_in_favorites, is_saved)
                     SELECT title, poster_path, overview, rating, is_in_favorites, is_saved
                     FROM cached_films
                 """.trimIndent())
 
-                database.execSQL("DROP TABLE cached_films")
-                database.execSQL("ALTER TABLE cached_films_temp RENAME TO cached_films")
-                database.execSQL("CREATE UNIQUE INDEX index_cached_films_title ON cached_films (title)")
+                db.execSQL("DROP TABLE cached_films")
+                db.execSQL("ALTER TABLE cached_films_temp RENAME TO cached_films")
+                db.execSQL("CREATE UNIQUE INDEX index_cached_films_title ON cached_films (title)")
             }
         }
 

@@ -1,12 +1,14 @@
 package com.dolgantsev.androindfirstproject.viewmodel
 
-import android.content.SharedPreferences
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider
 import com.dolgantsev.androindfirstproject.domain.Interactor
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class SettingsFragmentViewModel : ViewModel() {
@@ -16,21 +18,29 @@ class SettingsFragmentViewModel : ViewModel() {
     @Inject
     lateinit var preferenceProvider: PreferenceProvider
 
-    private val _categoryProperty = MutableStateFlow<String?>(null)
-    val categoryProperty: StateFlow<String?> get() = _categoryProperty
+    private val _categoryProperty = MutableLiveData<String?>()
+    val categoryProperty: LiveData<String?> get() = _categoryProperty
 
-    private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-        if (key == PreferenceProvider.CATEGORY_KEY) {
-            _categoryProperty.value = preferenceProvider.getCategory()
-        }
-    }
+    private val disposables = CompositeDisposable()
 
     init {
         App.instance.dagger.inject(this)
-        // Инициализируем начальное значение категории
+        // Подписываемся на изменения в SharedPreferences через RxJava
+        preferenceProvider.asObservable()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { category ->
+                    _categoryProperty.value = category ?: preferenceProvider.getCategory()
+                },
+                { error ->
+                    // Обработка ошибки (например, логирование)
+                }
+            )
+            .also { disposables.add(it) }
+
+        // Устанавливаем начальное значение
         _categoryProperty.value = preferenceProvider.getCategory()
-        // Регистрируем слушатель
-        preferenceProvider.registerListener(preferenceListener)
     }
 
     fun putCategoryProperty(category: String) {
@@ -39,7 +49,6 @@ class SettingsFragmentViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        // Снимаем слушатель при уничтожении ViewModel
-        preferenceProvider.unregisterListener(preferenceListener)
+        disposables.clear()
     }
 }

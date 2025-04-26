@@ -1,23 +1,24 @@
 package com.dolgantsev.androindfirstproject.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.domain.Interactor
 import com.dolgantsev.androindfirstproject.utils.SingleLiveEvent
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class HomeFragmentViewModel : ViewModel() {
 
-    private val _filmsList = MutableStateFlow<List<Film>>(emptyList())
-    val filmsList: StateFlow<List<Film>> get() = _filmsList
+    private val _filmsList = MutableLiveData<List<Film>>(emptyList())
+    val filmsList: LiveData<List<Film>> get() = _filmsList
 
-    private val _showProgressBar = MutableStateFlow(false)
-    val showProgressBar: StateFlow<Boolean> get() = _showProgressBar
+    private val _showProgressBar = MutableLiveData(false)
+    val showProgressBar: LiveData<Boolean> get() = _showProgressBar
 
     @Inject
     lateinit var interactor: Interactor
@@ -25,47 +26,53 @@ class HomeFragmentViewModel : ViewModel() {
     private val _errorEvent = SingleLiveEvent<String>()
     val errorEvent: SingleLiveEvent<String> get() = _errorEvent
 
+    private val disposables = CompositeDisposable()
+
     init {
         App.instance.dagger.inject(this)
     }
 
     fun getFilms() {
-        viewModelScope.launch {
-            _showProgressBar.value = true
-            val result = interactor.getFilmsFromApi(1, null)
-            _showProgressBar.value = false
-            result.onSuccess { films ->
-                _filmsList.value = films
-            }.onFailure {
-                _errorEvent.postValue("Ошибка загрузки данных с сервера")
-            }
-        }
+        _showProgressBar.value = true
+        interactor.getFilmsFromApi(1, null)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { films ->
+                    _filmsList.value = films
+                    _showProgressBar.value = false
+                },
+                { error ->
+                    _errorEvent.postValue("Ошибка загрузки данных с сервера")
+                    _showProgressBar.value = false
+                }
+            )
+            .also { disposables.add(it) }
     }
 
     fun searchFilms(query: String) {
-        viewModelScope.launch {
-            val currentFilms = _filmsList.value
-            if (query.isBlank()) {
-                getFilms() // Если запрос пустой, загружаем полный список
-            } else {
-                val filteredFilms = currentFilms.filter {
-                    it.title.contains(query, ignoreCase = true)
-                }
-                _filmsList.value = filteredFilms
+        val currentFilms = _filmsList.value ?: emptyList()
+        if (query.isBlank()) {
+            getFilms()
+        } else {
+            val filteredFilms = currentFilms.filter {
+                it.title.contains(query, ignoreCase = true)
             }
+            _filmsList.value = filteredFilms
         }
     }
 
     fun filterHighRatedFilms() {
-        viewModelScope.launch {
-            val highRatedFilms = _filmsList.value.filter { it.rating > 7.0 }
-            _filmsList.value = highRatedFilms
-        }
+        val highRatedFilms = (_filmsList.value ?: emptyList()).filter { it.rating > 7.0 }
+        _filmsList.value = highRatedFilms
     }
 
     fun clearFilms() {
-        viewModelScope.launch {
-            _filmsList.value = emptyList()
-        }
+        _filmsList.value = emptyList()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
     }
 }

@@ -2,6 +2,8 @@ package com.dolgantsev.androindfirstproject.data.dto
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
+import io.reactivex.rxjava3.core.Observable
 
 class PreferenceProvider(context: Context) {
 
@@ -9,20 +11,15 @@ class PreferenceProvider(context: Context) {
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     fun saveCategory(category: String) {
-        sharedPreferences.edit().putString(CATEGORY_KEY, category).apply()
+        sharedPreferences.edit { putString(CATEGORY_KEY, category) }
     }
 
     fun getCategory(): String {
         return sharedPreferences.getString(CATEGORY_KEY, "popular") ?: "popular"
     }
 
-    // Добавляем методы для регистрации и снятия слушателя
-    fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-    }
-
-    fun unregisterListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+    fun asObservable(): Observable<String> {
+        return sharedPreferences.asObservable(CATEGORY_KEY)
     }
 
     companion object {

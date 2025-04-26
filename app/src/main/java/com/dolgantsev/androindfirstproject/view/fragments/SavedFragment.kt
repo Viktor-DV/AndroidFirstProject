@@ -6,9 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dolgantsev.androindfirstproject.MainActivity
 import com.dolgantsev.androindfirstproject.databinding.FragmentSavedBinding
@@ -17,7 +14,6 @@ import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
 import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpacingItemDecoration
 import com.dolgantsev.androindfirstproject.viewmodel.SavedFragmentViewModel
-import kotlinx.coroutines.launch
 
 class SavedFragment : Fragment() {
 
@@ -49,12 +45,9 @@ class SavedFragment : Fragment() {
             addItemDecoration(TopSpacingItemDecoration(8))
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.savedFilms.collect { films ->
-                    filmsAdapter.submitList(films)
-                }
-            }
+        // Наблюдаем за LiveData
+        viewModel.savedFilms.observe(viewLifecycleOwner) { films ->
+            filmsAdapter.submitList(films)
         }
 
         // Анимация

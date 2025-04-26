@@ -1,17 +1,22 @@
-package com.dolgantsev.androindfirstproject.utils
+package com.dolgantsev.androindfirstproject.data.dto
 
 import android.content.SharedPreferences
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import io.reactivex.rxjava3.core.Observable
 
-fun SharedPreferences.asFlow(key: String): Flow<String?> = callbackFlow {
-    val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, changedKey ->
-        if (changedKey == key) {
-            trySend(prefs.getString(key, null))
+fun SharedPreferences.asObservable(key: String): Observable<String> {
+    return Observable.create { emitter ->
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, changedKey ->
+            if (changedKey == key) {
+                val value = prefs.getString(changedKey, "popular") ?: "popular"
+                emitter.onNext(value)
+            }
         }
+        registerOnSharedPreferenceChangeListener(listener)
+        emitter.setCancellable {
+            unregisterOnSharedPreferenceChangeListener(listener)
+        }
+        // Отправляем начальное значение
+        val initialValue = getString(key, "popular") ?: "popular"
+        emitter.onNext(initialValue)
     }
-    registerOnSharedPreferenceChangeListener(listener)
-    trySend(getString(key, null))
-    awaitClose { unregisterOnSharedPreferenceChangeListener(listener) }
 }

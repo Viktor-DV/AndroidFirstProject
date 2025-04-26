@@ -15,7 +15,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.dolgantsev.androindfirstproject.R
 import com.dolgantsev.androindfirstproject.api.ApiConstants
@@ -23,13 +22,16 @@ import com.dolgantsev.androindfirstproject.databinding.FragmentDetailsBinding
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.viewmodel.DetailsFragmentViewModel
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 class DetailsFragment : Fragment() {
 
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: DetailsFragmentViewModel by viewModels()
+    private val disposables = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,14 +44,19 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val film: Film? = arguments?.getParcelable("film")
+        val film: Film? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable("film", Film::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getParcelable("film")
+        }
 
         if (film != null) {
             binding.title.text = film.title
-            binding.detailsDescription.text = film.overview // Исправлено: description → overview
+            binding.detailsDescription.text = film.overview
 
             Glide.with(this)
-                .load(ApiConstants.IMAGES_URL + "w780" + film.posterPath) // Исправлено: poster → posterPath
+                .load(ApiConstants.IMAGES_URL + "w780" + film.posterPath)
                 .centerCrop()
                 .into(binding.detailsPoster)
 
@@ -57,25 +64,39 @@ class DetailsFragment : Fragment() {
             updateSavedIcon(film.isSaved)
 
             binding.detailsFabFavorites.setOnClickListener {
-                lifecycleScope.launch {
-                    film.isInFavorites = !film.isInFavorites
-                    updateFavoriteIcon(film.isInFavorites)
-                    viewModel.updateFilm(film)
-                }
+                film.isInFavorites = !film.isInFavorites
+                updateFavoriteIcon(film.isInFavorites)
+                viewModel.updateFilm(film)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { /* Успешное обновление, ничего не делаем */ },
+                        { error ->
+                            Snackbar.make(binding.root, "Ошибка обновления избранного", Snackbar.LENGTH_SHORT).show()
+                        }
+                    )
+                    .also { disposables.add(it) }
             }
 
             binding.detailsFabSave.setOnClickListener {
-                lifecycleScope.launch {
-                    film.isSaved = !film.isSaved
-                    updateSavedIcon(film.isSaved)
-                    viewModel.updateFilm(film)
-                }
+                film.isSaved = !film.isSaved
+                updateSavedIcon(film.isSaved)
+                viewModel.updateFilm(film)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { /* Успешное обновление, ничего не делаем */ },
+                        { error ->
+                            Snackbar.make(binding.root, "Ошибка обновления сохраненного", Snackbar.LENGTH_SHORT).show()
+                        }
+                    )
+                    .also { disposables.add(it) }
             }
 
             binding.detailsFabShare.setOnClickListener {
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "Check out this film: ${film.title}\n\n${film.overview}") // Исправлено: description → overview
+                    putExtra(Intent.EXTRA_TEXT, "Check out this film: ${film.title}\n\n${film.overview}")
                     type = "text/plain"
                 }
                 startActivity(Intent.createChooser(intent, "Share To:"))
@@ -84,6 +105,25 @@ class DetailsFragment : Fragment() {
             binding.detailsFabDownloadWp.setOnClickListener {
                 performAsyncLoadOfPoster(film)
             }
+
+            // Вызов getFilmByTitle с использованием Maybe
+            viewModel.getFilmByTitle(film.title)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { loadedFilm ->
+                        // Фильм найден, обновляем UI
+                        binding.detailsDescription.text = loadedFilm.overview
+                    },
+                    { error ->
+                        // Ошибка при загрузке
+                        Snackbar.make(binding.root, "Ошибка загрузки фильма", Snackbar.LENGTH_SHORT).show()
+                    },
+                    {
+                        // Фильм не найден (onComplete)
+                        binding.detailsDescription.text = "Фильм не найден в базе данных"
+                    }
+                )
+                .also { disposables.add(it) }
         } else {
             binding.detailsDescription.text = getString(R.string.error_no_film)
         }
@@ -151,7 +191,7 @@ class DetailsFragment : Fragment() {
                 requireActivity().contentResolver,
                 bitmap,
                 film?.title?.handleSingleQuote(),
-                film?.overview?.handleSingleQuote() // Исправлено: description → overview
+                film?.overview?.handleSingleQuote()
             )
         }
     }
@@ -165,29 +205,38 @@ class DetailsFragment : Fragment() {
             requestPermission()
             return
         }
-        lifecycleScope.launch {
-            binding.progressBar.isVisible = true
-            val bitmap = viewModel.loadWallpaper(ApiConstants.IMAGES_URL + "original" + film?.posterPath, requireContext()) // Исправлено: poster → posterPath
-            saveToGallery(bitmap, film)
-            Snackbar.make(
-                binding.root,
-                R.string.downloaded_to_gallery,
-                Snackbar.LENGTH_LONG
-            )
-                .setAction(R.string.open) {
-                    val intent = Intent()
-                    intent.action = Intent.ACTION_VIEW
-                    intent.type = "image/*"
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
+        binding.progressBar.isVisible = true
+        viewModel.loadWallpaper(ApiConstants.IMAGES_URL + "original" + film?.posterPath, requireContext())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { bitmap ->
+                    saveToGallery(bitmap, film)
+                    Snackbar.make(
+                        binding.root,
+                        R.string.downloaded_to_gallery,
+                        Snackbar.LENGTH_LONG
+                    )
+                        .setAction(R.string.open) {
+                            val intent = Intent()
+                            intent.action = Intent.ACTION_VIEW
+                            intent.type = "image/*"
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(intent)
+                        }
+                        .show()
+                    binding.progressBar.isVisible = false
+                },
+                { error ->
+                    binding.progressBar.isVisible = false
                 }
-                .show()
-            binding.progressBar.isVisible = false
-        }
+            )
+            .also { disposables.add(it) }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        disposables.clear()
         _binding = null
     }
 }

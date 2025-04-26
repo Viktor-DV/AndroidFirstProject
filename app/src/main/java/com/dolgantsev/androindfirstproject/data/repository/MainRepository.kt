@@ -5,56 +5,63 @@ import com.dolgantsev.androindfirstproject.api.TmdbApi
 import com.dolgantsev.androindfirstproject.data.dao.FilmDao
 import com.dolgantsev.androindfirstproject.data.dto.TmdbFilm
 import com.dolgantsev.androindfirstproject.domain.Film
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Maybe
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class MainRepository @Inject constructor(
     private val filmDao: FilmDao,
     private val tmdbApi: TmdbApi
 ) {
-    suspend fun getFilmsFromApi(page: Int, category: String?): Result<List<Film>> = withContext(Dispatchers.IO) {
-        try {
-            val response = tmdbApi.getPopularMovies(
-                apiKey = APIKEY.KEY,
-                language = "ru-RU",
-                page = page
-            )
-            val films = response.results.map { tmdbFilm ->
-                tmdbFilm.toFilm()
+    fun getFilmsFromApi(page: Int, category: String?): Single<List<Film>> {
+        return tmdbApi.getPopularMovies(
+            apiKey = APIKEY.KEY,
+            language = "ru-RU",
+            page = page
+        )
+            .subscribeOn(Schedulers.io())
+            .map { response ->
+                response.results.map { tmdbFilm ->
+                    tmdbFilm.toFilm()
+                }
             }
-            Result.success(films)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
     }
 
-    suspend fun putToDb(film: Film) = withContext(Dispatchers.IO) {
-        filmDao.insert(film)
+    fun putToDb(film: Film): Completable {
+        return Completable.fromCallable { filmDao.insert(film) }
+            .subscribeOn(Schedulers.io())
     }
 
-    suspend fun putToDb(films: List<Film>) = withContext(Dispatchers.IO) {
-        filmDao.insertAll(films)
+    fun putToDb(films: List<Film>): Completable {
+        return Completable.fromCallable { filmDao.insertAll(films) }
+            .subscribeOn(Schedulers.io())
     }
 
-    suspend fun getAllFromDB(): List<Film> = withContext(Dispatchers.IO) {
-        filmDao.getCachedFilms()
+    fun getAllFromDB(): Single<List<Film>> {
+        return Single.fromCallable { filmDao.getCachedFilms() }
+            .subscribeOn(Schedulers.io())
     }
 
-    suspend fun updateFilm(film: Film) = withContext(Dispatchers.IO) {
-        filmDao.update(film)
+    fun updateFilm(film: Film): Completable {
+        return Completable.fromCallable { filmDao.update(film) }
+            .subscribeOn(Schedulers.io())
     }
 
-    suspend fun deleteFilm(title: String) = withContext(Dispatchers.IO) {
-        filmDao.deleteByTitle(title)
+    fun deleteFilm(title: String): Completable {
+        return Completable.fromCallable { filmDao.deleteByTitle(title) }
+            .subscribeOn(Schedulers.io())
     }
 
-    suspend fun getFilmsByRating(minRating: Double): List<Film> = withContext(Dispatchers.IO) {
-        filmDao.getFilmsByRating(minRating)
+    fun getFilmsByRating(minRating: Double): Single<List<Film>> {
+        return Single.fromCallable { filmDao.getFilmsByRating(minRating) }
+            .subscribeOn(Schedulers.io())
     }
 
-    suspend fun getFilmByTitle(title: String): Film? = withContext(Dispatchers.IO) {
-        filmDao.getFilmByTitle(title)
+    fun getFilmByTitle(title: String): Maybe<Film> {
+        return Maybe.fromCallable { filmDao.getFilmByTitle(title) }
+            .subscribeOn(Schedulers.io())
     }
 
     private fun TmdbFilm.toFilm(): Film {

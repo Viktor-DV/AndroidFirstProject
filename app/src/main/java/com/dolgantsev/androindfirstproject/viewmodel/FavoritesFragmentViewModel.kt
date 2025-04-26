@@ -1,35 +1,48 @@
 package com.dolgantsev.androindfirstproject.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.domain.Interactor
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class FavoritesFragmentViewModel : ViewModel() {
 
-    private val _favoritesList = MutableStateFlow<List<Film>>(emptyList())
-    val favoritesList: StateFlow<List<Film>> get() = _favoritesList
+    private val _favoritesList = MutableLiveData<List<Film>>(emptyList())
+    val favoritesList: LiveData<List<Film>> get() = _favoritesList
 
     @Inject
     lateinit var interactor: Interactor
+
+    private val disposables = CompositeDisposable()
 
     init {
         App.instance.dagger.inject(this)
     }
 
     fun getFavorites() {
-        viewModelScope.launch {
-            interactor.getFilmsFromDB().onSuccess { films ->
-                val favorites = films.filter { it.isInFavorites }
-                _favoritesList.value = favorites
-            }.onFailure { e ->
-                _favoritesList.value = emptyList()
-            }
-        }
+        interactor.getFilmsFromDB()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .map { films -> films.filter { it.isInFavorites } }
+            .subscribe(
+                { favorites ->
+                    _favoritesList.value = favorites
+                },
+                { error ->
+                    _favoritesList.value = emptyList()
+                }
+            )
+            .also { disposables.add(it) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
     }
 }

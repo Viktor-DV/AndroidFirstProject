@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.lottie)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.retrofit.rxjava.adapter)
     implementation(libs.logging.interceptor)
     implementation(libs.dagger)
     implementation(libs.javax.inject)
@@ -71,6 +72,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.rxjava)
+    implementation(libs.rxandroid)
+    implementation(libs.rxkotlin)
 
     kapt(libs.room.compiler)
     kapt(libs.glide.compiler)
@@ -90,5 +94,7 @@ configurations.all {
         force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24")
         force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24")
         force("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
+        force("io.reactivex.rxjava3:rxjava:3.1.7")
+        force("io.reactivex.rxjava3:rxandroid:3.0.1")
     }
 }

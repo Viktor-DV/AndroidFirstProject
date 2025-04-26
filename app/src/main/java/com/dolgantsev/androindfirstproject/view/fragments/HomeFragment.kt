@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.MainActivity
@@ -17,7 +15,6 @@ import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
 import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpacingItemDecoration
 import com.dolgantsev.androindfirstproject.viewmodel.HomeFragmentViewModel
-import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
@@ -42,22 +39,14 @@ class HomeFragment : Fragment() {
 
         initRecyclerView()
 
-        // Наблюдаем за списком фильмов
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                viewModel.filmsList.collect { films ->
-                    filmsAdapter.submitList(films)
-                }
-            }
+        // Наблюдаем за списком фильмов через LiveData
+        viewModel.filmsList.observe(viewLifecycleOwner) { films ->
+            filmsAdapter.submitList(films)
         }
 
-        // Наблюдаем за прогресс-баром
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                viewModel.showProgressBar.collect { isVisible ->
-                    binding.progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
-                }
-            }
+        // Наблюдаем за прогресс-баром через LiveData
+        viewModel.showProgressBar.observe(viewLifecycleOwner) { isVisible ->
+            binding.progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
         }
 
         // Наблюдаем за ошибками

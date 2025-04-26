@@ -6,9 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dolgantsev.androindfirstproject.MainActivity
 import com.dolgantsev.androindfirstproject.databinding.FragmentFavoritesBinding
@@ -17,7 +14,6 @@ import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
 import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpacingItemDecoration
 import com.dolgantsev.androindfirstproject.viewmodel.FavoritesFragmentViewModel
-import kotlinx.coroutines.launch
 
 class FavoritesFragment : Fragment() {
 
@@ -49,13 +45,9 @@ class FavoritesFragment : Fragment() {
             addItemDecoration(TopSpacingItemDecoration(8))
         }
 
-        // Наблюдаем за списком избранных фильмов
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.favoritesList.collect { favorites ->
-                    filmsAdapter.submitList(favorites)
-                }
-            }
+        // Наблюдаем за списком избранных фильмов через LiveData
+        viewModel.favoritesList.observe(viewLifecycleOwner) { favorites ->
+            filmsAdapter.submitList(favorites)
         }
 
         // Анимация

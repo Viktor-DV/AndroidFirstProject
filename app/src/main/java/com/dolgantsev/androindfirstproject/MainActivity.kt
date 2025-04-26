@@ -1,15 +1,12 @@
 package com.dolgantsev.androindfirstproject
 
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
-import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider.Companion.CATEGORY_KEY
 import com.dolgantsev.androindfirstproject.databinding.ActivityMainBinding
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.view.fragments.CollectionsFragment
@@ -18,13 +15,16 @@ import com.dolgantsev.androindfirstproject.view.fragments.FavoritesFragment
 import com.dolgantsev.androindfirstproject.view.fragments.HomeFragment
 import com.dolgantsev.androindfirstproject.view.fragments.SavedFragment
 import com.dolgantsev.androindfirstproject.view.fragments.SettingsFragment
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var startScreenAnimationView: LottieAnimationView
+    private val disposables = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,15 +38,21 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         startScreenAnimationView.repeatMode = LottieDrawable.RESTART
         startScreenAnimationView.playAnimation()
 
-        // Используем корутины вместо Handler
-        lifecycleScope.launch {
-            delay(3000)
-            startScreenAnimationView.visibility = View.GONE
-
-            if (savedInstanceState == null) {
-                changeFragment(HomeFragment(), "home")
-            }
-        }
+        // Используем RxJava вместо корутин для задержки
+        Observable.timer(3000, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { _ ->
+                    startScreenAnimationView.visibility = View.GONE
+                    if (savedInstanceState == null) {
+                        changeFragment(HomeFragment(), "home")
+                    }
+                },
+                { error ->
+                    // Обработка ошибки (например, логирование)
+                }
+            )
+            .also { disposables.add(it) }
 
         val bottomNavigation = binding.bottomNavigation
         bottomNavigation.setOnItemSelectedListener { item ->
@@ -116,12 +122,24 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             }
         })
 
-        App.instance.preferences.registerListener(this)
+        // Подписываемся на изменения SharedPreferences через RxJava
+        App.instance.preferences.asObservable()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { _ ->
+                    val homeFragment = supportFragmentManager.findFragmentByTag("home") as? HomeFragment
+                    homeFragment?.updateMoviesList()
+                },
+                { error ->
+                    // Обработка ошибки (например, логирование)
+                }
+            )
+            .also { disposables.add(it) }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        App.instance.preferences.unregisterListener(this)
+        disposables.clear()
     }
 
     private fun changeFragment(fragment: Fragment, tag: String) {
@@ -143,12 +161,5 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             arguments = bundle
         }
         changeFragment(fragment, "details")
-    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (key == CATEGORY_KEY) {
-            val homeFragment = supportFragmentManager.findFragmentByTag("home") as? HomeFragment
-            homeFragment?.updateMoviesList()
-        }
     }
 }

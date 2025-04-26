@@ -10,23 +10,23 @@ import com.dolgantsev.androindfirstproject.domain.Film
 @Dao
 interface FilmDao {
     @Query("SELECT * FROM cached_films")
-    suspend fun getCachedFilms(): List<Film>
+    fun getCachedFilms(): List<Film>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(list: List<Film>)
+    fun insertAll(list: List<Film>): LongArray
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(film: Film)
+    fun insert(film: Film): Long
 
     @Update
-    suspend fun update(film: Film)
+    fun update(film: Film): Int
 
     @Query("DELETE FROM cached_films WHERE title = :title")
-    suspend fun deleteByTitle(title: String)
+    fun deleteByTitle(title: String): Int
 
     @Query("SELECT * FROM cached_films WHERE rating >= :minRating")
-    suspend fun getFilmsByRating(minRating: Double): List<Film>
+    fun getFilmsByRating(minRating: Double): List<Film>
 
     @Query("SELECT * FROM cached_films WHERE title = :title LIMIT 1")
-    suspend fun getFilmByTitle(title: String): Film?
+    fun getFilmByTitle(title: String): Film?
 }

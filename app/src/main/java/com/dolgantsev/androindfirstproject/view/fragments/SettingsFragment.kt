@@ -6,14 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.dolgantsev.androindfirstproject.R
 import com.dolgantsev.androindfirstproject.databinding.FragmentSettingsBinding
 import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 import com.dolgantsev.androindfirstproject.viewmodel.SettingsFragmentViewModel
-import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
@@ -34,17 +30,13 @@ class SettingsFragment : Fragment() {
         // Анимация
         AnimationHelper.performFragmentCircularRevealAnimation(binding.root, 5)
 
-        // Наблюдение за настройками
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.categoryProperty.collect { category ->
-                    when (category) {
-                        POPULAR_CATEGORY -> binding.radioGroup.check(R.id.radio_popular)
-                        TOP_RATED_CATEGORY -> binding.radioGroup.check(R.id.radio_top_rated)
-                        UPCOMING_CATEGORY -> binding.radioGroup.check(R.id.radio_upcoming)
-                        NOW_PLAYING_CATEGORY -> binding.radioGroup.check(R.id.radio_now_playing)
-                    }
-                }
+        // Наблюдение за настройками через LiveData
+        viewModel.categoryProperty.observe(viewLifecycleOwner) { category ->
+            when (category) {
+                POPULAR_CATEGORY -> binding.radioGroup.check(R.id.radio_popular)
+                TOP_RATED_CATEGORY -> binding.radioGroup.check(R.id.radio_top_rated)
+                UPCOMING_CATEGORY -> binding.radioGroup.check(R.id.radio_upcoming)
+                NOW_PLAYING_CATEGORY -> binding.radioGroup.check(R.id.radio_now_playing)
             }
         }
 

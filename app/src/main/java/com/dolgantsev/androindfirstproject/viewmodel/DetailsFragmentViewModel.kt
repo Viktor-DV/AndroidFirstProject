@@ -4,31 +4,32 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import com.bumptech.glide.Glide
-import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.domain.Interactor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Maybe
+import io.reactivex.rxjava3.core.Single
 import javax.inject.Inject
 
-class DetailsFragmentViewModel : ViewModel() {
+class DetailsFragmentViewModel @Inject constructor(
+    private val interactor: Interactor
+) : ViewModel() {
 
-    @Inject
-    lateinit var interactor: Interactor
-
-    init {
-        App.instance.dagger.inject(this)
+    fun updateFilm(film: Film): Completable {
+        return interactor.updateFilm(film)
     }
 
-    suspend fun updateFilm(film: Film) {
-        interactor.updateFilm(film)
+    fun loadWallpaper(url: String, context: Context): Single<Bitmap> {
+        return Single.fromCallable {
+            Glide.with(context)
+                .asBitmap()
+                .load(url)
+                .submit()
+                .get()
+        }
     }
 
-    suspend fun loadWallpaper(url: String, context: Context): Bitmap = withContext(Dispatchers.IO) {
-        Glide.with(context)
-            .asBitmap()
-            .load(url)
-            .submit()
-            .get()
+    fun getFilmByTitle(title: String): Maybe<Film> {
+        return interactor.getFilmByTitle(title)
     }
 }
