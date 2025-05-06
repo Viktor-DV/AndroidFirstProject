@@ -8,8 +8,11 @@ import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.domain.Interactor
 import com.dolgantsev.androindfirstproject.utils.SingleLiveEvent
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class HomeFragmentViewModel : ViewModel() {
@@ -27,39 +30,93 @@ class HomeFragmentViewModel : ViewModel() {
     val errorEvent: SingleLiveEvent<String> get() = _errorEvent
 
     private val disposables = CompositeDisposable()
+    private val searchSubject = PublishSubject.create<String>()
+    private var currentPage = 1
+    private var currentQuery = ""
 
     init {
         App.instance.dagger.inject(this)
+        setupSearchObservable()
+    }
+
+    private fun setupSearchObservable() {
+        disposables.add(
+            searchSubject
+                .debounce(300, TimeUnit.MILLISECONDS) // Задержка 300 мс
+                .distinctUntilChanged() // Игнорируем повторяющиеся запросы
+                .switchMap { query ->
+                    currentQuery = query
+                    currentPage = 1 // Сбрасываем страницу для нового запроса
+                    performSearch(query, currentPage)
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { films ->
+                        _filmsList.value = films
+                        _showProgressBar.value = false
+                    },
+                    { error ->
+                        _errorEvent.postValue("Ошибка поиска: ${error.message}")
+                        _showProgressBar.value = false
+                    }
+                )
+        )
+    }
+
+    private fun performSearch(query: String, page: Int): Observable<List<Film>> {
+        if (query.length < 3) { // Поиск только при 3+ символах
+            return Observable.just(emptyList())
+        }
+        _showProgressBar.value = true
+        return interactor.searchFilms(query, page)
+            .toObservable()
+            .onErrorReturn { emptyList() }
+            .doOnTerminate { _showProgressBar.value = false }
+    }
+
+    fun searchFilms(query: String) {
+        searchSubject.onNext(query)
+    }
+
+    fun loadNextPage() {
+        if (currentQuery.isEmpty()) return
+        _showProgressBar.value = true
+        disposables.add(
+            interactor.searchFilms(currentQuery, ++currentPage)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { newFilms ->
+                        val currentList = _filmsList.value.orEmpty().toMutableList()
+                        currentList.addAll(newFilms)
+                        _filmsList.value = currentList
+                        _showProgressBar.value = false
+                    },
+                    { error ->
+                        _errorEvent.postValue("Ошибка загрузки следующей страницы: ${error.message}")
+                        _showProgressBar.value = false
+                    }
+                )
+        )
     }
 
     fun getFilms() {
         _showProgressBar.value = true
-        interactor.getFilmsFromApi(1, null)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { films ->
-                    _filmsList.value = films
-                    _showProgressBar.value = false
-                },
-                { error ->
-                    _errorEvent.postValue("Ошибка загрузки данных с сервера")
-                    _showProgressBar.value = false
-                }
-            )
-            .also { disposables.add(it) }
-    }
-
-    fun searchFilms(query: String) {
-        val currentFilms = _filmsList.value ?: emptyList()
-        if (query.isBlank()) {
-            getFilms()
-        } else {
-            val filteredFilms = currentFilms.filter {
-                it.title.contains(query, ignoreCase = true)
-            }
-            _filmsList.value = filteredFilms
-        }
+        disposables.add(
+            interactor.getFilmsFromApi(1, null)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { films ->
+                        _filmsList.value = films
+                        _showProgressBar.value = false
+                    },
+                    { error ->
+                        _errorEvent.postValue("Ошибка загрузки данных с сервера")
+                        _showProgressBar.value = false
+                    }
+                )
+        )
     }
 
     fun filterHighRatedFilms() {

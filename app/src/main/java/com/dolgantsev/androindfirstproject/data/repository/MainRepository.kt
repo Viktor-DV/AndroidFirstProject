@@ -29,6 +29,21 @@ class MainRepository @Inject constructor(
             }
     }
 
+    fun searchFilms(query: String, page: Int): Single<List<Film>> {
+        return tmdbApi.searchMovies(
+            apiKey = APIKEY.KEY,
+            language = "ru-RU",
+            query = query,
+            page = page
+        )
+            .subscribeOn(Schedulers.io())
+            .map { response ->
+                response.results.map { tmdbFilm ->
+                    tmdbFilm.toFilm()
+                }
+            }
+    }
+
     fun putToDb(film: Film): Completable {
         return Completable.fromCallable { filmDao.insert(film) }
             .subscribeOn(Schedulers.io())

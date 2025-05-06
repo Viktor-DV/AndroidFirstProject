@@ -16,6 +16,10 @@ class Interactor @Inject constructor(
         return repository.getFilmsFromApi(page, category)
     }
 
+    fun searchFilms(query: String, page: Int): Single<List<Film>> {
+        return repository.searchFilms(query, page)
+    }
+
     fun getFilmsFromDB(): Single<List<Film>> {
         return repository.getAllFromDB()
     }
