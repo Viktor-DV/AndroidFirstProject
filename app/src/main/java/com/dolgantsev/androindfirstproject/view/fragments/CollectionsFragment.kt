@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dolgantsev.androindfirstproject.MainActivity
 import com.dolgantsev.androindfirstproject.databinding.FragmentCollectionsBinding
-import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.utils.AnimationHelper
 import com.dolgantsev.androindfirstproject.view.rv_adapters.CollectionsAdapter
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
@@ -35,7 +34,7 @@ class CollectionsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         collectionsAdapter = CollectionsAdapter(object : FilmListRecyclerAdapter.OnItemClickListener {
-            override fun click(film: Film) {
+            override fun click(film: com.dolgantsev.androindfirstproject.domain.Film) {
                 (requireActivity() as MainActivity).launchDetailsFragment(film)
             }
         })

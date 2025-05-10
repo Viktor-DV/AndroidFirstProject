@@ -4,8 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.dolgantsev.androindfirstproject.App
-import com.dolgantsev.androindfirstproject.domain.Film
-import com.dolgantsev.androindfirstproject.domain.Interactor
+import com.dolgantsev.androindfirstproject.core.interactors.Interactor
 import com.dolgantsev.androindfirstproject.utils.SingleLiveEvent
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -17,8 +16,8 @@ import javax.inject.Inject
 
 class HomeFragmentViewModel : ViewModel() {
 
-    private val _filmsList = MutableLiveData<List<Film>>(emptyList())
-    val filmsList: LiveData<List<Film>> get() = _filmsList
+    private val _filmsList = MutableLiveData<List<com.dolgantsev.androindfirstproject.domain.Film>>(emptyList())
+    val filmsList: LiveData<List<com.dolgantsev.androindfirstproject.domain.Film>> get() = _filmsList
 
     private val _showProgressBar = MutableLiveData(false)
     val showProgressBar: LiveData<Boolean> get() = _showProgressBar
@@ -35,7 +34,7 @@ class HomeFragmentViewModel : ViewModel() {
     private var currentQuery = ""
 
     init {
-        App.instance.dagger.inject(this)
+        App.instance.appComponent.inject(this)
         setupSearchObservable()
     }
 
@@ -63,7 +62,7 @@ class HomeFragmentViewModel : ViewModel() {
         )
     }
 
-    private fun performSearch(query: String, page: Int): Observable<List<Film>> {
+    private fun performSearch(query: String, page: Int): Observable<List<com.dolgantsev.androindfirstproject.domain.Film>> {
         if (query.length < 3) { // Поиск только при 3+ символах
             return Observable.just(emptyList())
         }

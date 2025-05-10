@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.MainActivity
 import com.dolgantsev.androindfirstproject.databinding.FragmentHomeBinding
-import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.view.rv_adapters.FilmListRecyclerAdapter
 import com.dolgantsev.androindfirstproject.view.rv_adapters.TopSpacingItemDecoration
 import com.dolgantsev.androindfirstproject.viewmodel.HomeFragmentViewModel
@@ -36,7 +35,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        App.instance.dagger.inject(viewModel)
+        App.instance.appComponent.inject(viewModel)
 
         initRecyclerView()
 
@@ -105,7 +104,7 @@ class HomeFragment : Fragment() {
         binding.mainRecycler.apply {
             filmsAdapter = FilmListRecyclerAdapter(
                 object : FilmListRecyclerAdapter.OnItemClickListener {
-                    override fun click(film: Film) {
+                    override fun click(film: com.dolgantsev.androindfirstproject.domain.Film) {
                         (requireActivity() as MainActivity).launchDetailsFragment(film)
                     }
                 }

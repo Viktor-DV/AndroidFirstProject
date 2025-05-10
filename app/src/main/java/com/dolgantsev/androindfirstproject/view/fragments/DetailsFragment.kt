@@ -17,9 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.dolgantsev.androindfirstproject.R
-import com.dolgantsev.androindfirstproject.api.ApiConstants
 import com.dolgantsev.androindfirstproject.databinding.FragmentDetailsBinding
-import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.viewmodel.DetailsFragmentViewModel
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -44,8 +42,8 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val film: Film? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getParcelable("film", Film::class.java)
+        val film: com.dolgantsev.androindfirstproject.domain.Film? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable("film", com.dolgantsev.androindfirstproject.domain.Film::class.java)
         } else {
             @Suppress("DEPRECATION")
             arguments?.getParcelable("film")
@@ -56,7 +54,7 @@ class DetailsFragment : Fragment() {
             binding.detailsDescription.text = film.overview
 
             Glide.with(this)
-                .load(ApiConstants.IMAGES_URL + "w780" + film.posterPath)
+                .load(com.dolgantsev.androindfirstproject.network.api.ApiConstants.IMAGES_URL + "w780" + film.posterPath)
                 .centerCrop()
                 .into(binding.detailsPoster)
 
@@ -106,8 +104,8 @@ class DetailsFragment : Fragment() {
                 performAsyncLoadOfPoster(film)
             }
 
-            // Вызов getFilmByTitle с использованием Maybe
-            viewModel.getFilmByTitle(film.title)
+            // Обновленный вызов с использованием id вместо title
+            viewModel.getFilmById(film.id)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { loadedFilm ->
@@ -163,7 +161,7 @@ class DetailsFragment : Fragment() {
         )
     }
 
-    private fun saveToGallery(bitmap: Bitmap, film: Film?) {
+    private fun saveToGallery(bitmap: Bitmap, film: com.dolgantsev.androindfirstproject.domain.Film?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val contentValues = ContentValues().apply {
                 put(MediaStore.Images.Media.TITLE, film?.title?.handleSingleQuote())
@@ -200,13 +198,13 @@ class DetailsFragment : Fragment() {
         return this.replace("'", "")
     }
 
-    private fun performAsyncLoadOfPoster(film: Film?) {
+    private fun performAsyncLoadOfPoster(film: com.dolgantsev.androindfirstproject.domain.Film?) {
         if (!checkPermission()) {
             requestPermission()
             return
         }
         binding.progressBar.isVisible = true
-        viewModel.loadWallpaper(ApiConstants.IMAGES_URL + "original" + film?.posterPath, requireContext())
+        viewModel.loadWallpaper(com.dolgantsev.androindfirstproject.network.api.ApiConstants.IMAGES_URL + "original" + film?.posterPath, requireContext())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(

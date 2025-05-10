@@ -4,8 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import com.bumptech.glide.Glide
-import com.dolgantsev.androindfirstproject.domain.Film
-import com.dolgantsev.androindfirstproject.domain.Interactor
+import com.dolgantsev.androindfirstproject.core.interactors.Interactor
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Single
@@ -15,7 +14,7 @@ class DetailsFragmentViewModel @Inject constructor(
     private val interactor: Interactor
 ) : ViewModel() {
 
-    fun updateFilm(film: Film): Completable {
+    fun updateFilm(film: com.dolgantsev.androindfirstproject.domain.Film): Completable {
         return interactor.updateFilm(film)
     }
 
@@ -29,7 +28,7 @@ class DetailsFragmentViewModel @Inject constructor(
         }
     }
 
-    fun getFilmByTitle(title: String): Maybe<Film> {
-        return interactor.getFilmByTitle(title)
+    fun getFilmById(id: Int): Maybe<com.dolgantsev.androindfirstproject.domain.Film> {
+        return interactor.getFilmById(id)
     }
 }

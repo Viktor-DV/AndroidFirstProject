@@ -50,6 +50,11 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
+    implementation(project(":domain"))
+    implementation(project(":network"))
+    implementation(project(":database"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -58,16 +63,10 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.glide)
     implementation(libs.lottie)
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.retrofit.rxjava.adapter)
-    implementation(libs.logging.interceptor)
     implementation(libs.dagger)
     implementation(libs.javax.inject)
     implementation(libs.swipe.refresh)
     implementation(libs.kotlinx.metadata.jvm)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
@@ -75,8 +74,14 @@ dependencies {
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
     implementation(libs.rxkotlin)
+    implementation(libs.okhttp)
+    implementation(libs.retrofit)
+    implementation(libs.room.rxjava3)
+    implementation(libs.logging.interceptor)
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit.rxjava.adapter)
 
-    kapt(libs.room.compiler)
+
     kapt(libs.glide.compiler)
     kapt(libs.dagger.compiler)
 

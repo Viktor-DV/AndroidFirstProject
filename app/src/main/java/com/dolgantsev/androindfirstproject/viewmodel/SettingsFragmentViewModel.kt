@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.dolgantsev.androindfirstproject.App
-import com.dolgantsev.androindfirstproject.data.dto.PreferenceProvider
-import com.dolgantsev.androindfirstproject.domain.Interactor
+import com.dolgantsev.androindfirstproject.core.dto.PreferenceProvider
+import com.dolgantsev.androindfirstproject.core.interactors.Interactor
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -24,7 +24,7 @@ class SettingsFragmentViewModel : ViewModel() {
     private val disposables = CompositeDisposable()
 
     init {
-        App.instance.dagger.inject(this)
+        App.instance.appComponent.inject(this)
         // Подписываемся на изменения в SharedPreferences через RxJava
         preferenceProvider.asObservable()
             .subscribeOn(Schedulers.io())

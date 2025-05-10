@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
 import com.dolgantsev.androindfirstproject.databinding.ActivityMainBinding
-import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.view.fragments.CollectionsFragment
 import com.dolgantsev.androindfirstproject.view.fragments.DetailsFragment
 import com.dolgantsev.androindfirstproject.view.fragments.FavoritesFragment
@@ -153,7 +152,7 @@ class MainActivity : AppCompatActivity() {
         return supportFragmentManager.findFragmentByTag(tag)
     }
 
-    fun launchDetailsFragment(film: Film) {
+    fun launchDetailsFragment(film: com.dolgantsev.androindfirstproject.domain.Film) {
         val bundle = Bundle().apply {
             putParcelable("film", film)
         }

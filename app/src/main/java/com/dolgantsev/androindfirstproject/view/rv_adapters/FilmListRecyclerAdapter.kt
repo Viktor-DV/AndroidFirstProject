@@ -7,12 +7,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dolgantsev.androindfirstproject.R
-import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.view.rv_viewholders.FilmViewHolder
 
 class FilmListRecyclerAdapter(
     private val clickListener: OnItemClickListener
-) : ListAdapter<Film, RecyclerView.ViewHolder>(FilmDiffCallback()) {
+) : ListAdapter<com.dolgantsev.androindfirstproject.domain.Film, RecyclerView.ViewHolder>(FilmDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.film_item, parent, false)
@@ -32,16 +31,16 @@ class FilmListRecyclerAdapter(
     }
 
     interface OnItemClickListener {
-        fun click(film: Film)
+        fun click(film: com.dolgantsev.androindfirstproject.domain.Film)
     }
 }
 
-class FilmDiffCallback : DiffUtil.ItemCallback<Film>() {
-    override fun areItemsTheSame(oldItem: Film, newItem: Film): Boolean {
+class FilmDiffCallback : DiffUtil.ItemCallback<com.dolgantsev.androindfirstproject.domain.Film>() {
+    override fun areItemsTheSame(oldItem: com.dolgantsev.androindfirstproject.domain.Film, newItem: com.dolgantsev.androindfirstproject.domain.Film): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: Film, newItem: Film): Boolean {
+    override fun areContentsTheSame(oldItem: com.dolgantsev.androindfirstproject.domain.Film, newItem: com.dolgantsev.androindfirstproject.domain.Film): Boolean {
         return oldItem == newItem
     }
 }

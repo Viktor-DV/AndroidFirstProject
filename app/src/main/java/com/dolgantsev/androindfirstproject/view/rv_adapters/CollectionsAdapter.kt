@@ -9,11 +9,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dolgantsev.androindfirstproject.R
-import com.dolgantsev.androindfirstproject.domain.Film
 
 class CollectionsAdapter(
     private val clickListener: FilmListRecyclerAdapter.OnItemClickListener
-) : ListAdapter<Pair<String, List<Film>>, CollectionsAdapter.CollectionViewHolder>(CollectionDiffCallback()) {
+) : ListAdapter<Pair<String, List<com.dolgantsev.androindfirstproject.domain.Film>>, CollectionsAdapter.CollectionViewHolder>(CollectionDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CollectionViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.collection_item, parent, false)
@@ -25,7 +24,7 @@ class CollectionsAdapter(
         holder.bind(category, films)
     }
 
-    fun submitCollections(newCollections: Map<String, List<Film>>) {
+    fun submitCollections(newCollections: Map<String, List<com.dolgantsev.androindfirstproject.domain.Film>>) {
         submitList(newCollections.toList())
     }
 
@@ -33,7 +32,7 @@ class CollectionsAdapter(
         private val categoryTitle: TextView = itemView.findViewById(R.id.category_title)
         private val filmsRecycler: RecyclerView = itemView.findViewById(R.id.films_recycler)
 
-        fun bind(category: String, films: List<Film>) {
+        fun bind(category: String, films: List<com.dolgantsev.androindfirstproject.domain.Film>) {
             categoryTitle.text = when (category) {
                 "popular" -> "Популярные"
                 "top_rated" -> "Высокий рейтинг"
@@ -52,12 +51,12 @@ class CollectionsAdapter(
     }
 }
 
-class CollectionDiffCallback : DiffUtil.ItemCallback<Pair<String, List<Film>>>() {
-    override fun areItemsTheSame(oldItem: Pair<String, List<Film>>, newItem: Pair<String, List<Film>>): Boolean {
+class CollectionDiffCallback : DiffUtil.ItemCallback<Pair<String, List<com.dolgantsev.androindfirstproject.domain.Film>>>() {
+    override fun areItemsTheSame(oldItem: Pair<String, List<com.dolgantsev.androindfirstproject.domain.Film>>, newItem: Pair<String, List<com.dolgantsev.androindfirstproject.domain.Film>>): Boolean {
         return oldItem.first == newItem.first
     }
 
-    override fun areContentsTheSame(oldItem: Pair<String, List<Film>>, newItem: Pair<String, List<Film>>): Boolean {
+    override fun areContentsTheSame(oldItem: Pair<String, List<com.dolgantsev.androindfirstproject.domain.Film>>, newItem: Pair<String, List<com.dolgantsev.androindfirstproject.domain.Film>>): Boolean {
         return oldItem == newItem
     }
 }
