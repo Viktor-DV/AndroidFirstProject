@@ -2,16 +2,12 @@ package com.dolgantsev.androindfirstproject.view.fragments
 
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -23,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import android.provider.MediaStore
 
 class DetailsFragment : Fragment() {
 
@@ -69,7 +66,7 @@ class DetailsFragment : Fragment() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         { /* Успешное обновление, ничего не делаем */ },
-                        { error ->
+                        { _ ->
                             Snackbar.make(binding.root, "Ошибка обновления избранного", Snackbar.LENGTH_SHORT).show()
                         }
                     )
@@ -84,7 +81,7 @@ class DetailsFragment : Fragment() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         { /* Успешное обновление, ничего не делаем */ },
-                        { error ->
+                        { _ ->
                             Snackbar.make(binding.root, "Ошибка обновления сохраненного", Snackbar.LENGTH_SHORT).show()
                         }
                     )
@@ -112,7 +109,7 @@ class DetailsFragment : Fragment() {
                         // Фильм найден, обновляем UI
                         binding.detailsDescription.text = loadedFilm.overview
                     },
-                    { error ->
+                    { _ ->
                         // Ошибка при загрузке
                         Snackbar.make(binding.root, "Ошибка загрузки фильма", Snackbar.LENGTH_SHORT).show()
                     },
@@ -145,91 +142,68 @@ class DetailsFragment : Fragment() {
         binding.detailsFabSave.setImageResource(iconResId)
     }
 
-    private fun checkPermission(): Boolean {
-        val result = ContextCompat.checkSelfPermission(
-            requireContext(),
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        return result == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestPermission() {
-        ActivityCompat.requestPermissions(
-            requireActivity(),
-            arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            1
-        )
-    }
-
     private fun saveToGallery(bitmap: Bitmap, film: com.dolgantsev.androindfirstproject.domain.Film?) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Images.Media.TITLE, film?.title?.handleSingleQuote())
-                put(MediaStore.Images.Media.DISPLAY_NAME, film?.title?.handleSingleQuote())
-                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
-                put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/FilmsSearchApp")
-            }
-            val contentResolver = requireActivity().contentResolver
-            val uri = contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues
-            )
-            uri?.let {
-                val outputStream = contentResolver.openOutputStream(it)
-                outputStream?.let { stream ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-                    stream.close()
-                }
-            }
-        } else {
-            @Suppress("DEPRECATION")
-            MediaStore.Images.Media.insertImage(
-                requireActivity().contentResolver,
-                bitmap,
-                film?.title?.handleSingleQuote(),
-                film?.overview?.handleSingleQuote()
-            )
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, film?.title?.handleSingleQuote() ?: "film_poster")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
+            put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/FilmsSearchApp")
         }
-    }
 
-    private fun String.handleSingleQuote(): String {
-        return this.replace("'", "")
+        val resolver = requireActivity().contentResolver
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+        uri?.let {
+            try {
+                resolver.openOutputStream(it)?.use { outputStream ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                }
+                Snackbar.make(
+                    binding.root,
+                    R.string.downloaded_to_gallery,
+                    Snackbar.LENGTH_LONG
+                )
+                    .setAction(R.string.open) {
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "image/*")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        startActivity(intent)
+                    }
+                    .show()
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "Ошибка сохранения изображения", Snackbar.LENGTH_SHORT).show()
+            }
+        } ?: run {
+            Snackbar.make(binding.root, "Не удалось сохранить изображение", Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     private fun performAsyncLoadOfPoster(film: com.dolgantsev.androindfirstproject.domain.Film?) {
-        if (!checkPermission()) {
-            requestPermission()
-            return
-        }
         binding.progressBar.isVisible = true
-        viewModel.loadWallpaper(com.dolgantsev.androindfirstproject.network.api.ApiConstants.IMAGES_URL + "original" + film?.posterPath, requireContext())
+        viewModel.loadWallpaper(
+            com.dolgantsev.androindfirstproject.network.api.ApiConstants.IMAGES_URL + "original" + film?.posterPath,
+            requireContext()
+        )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { bitmap ->
                     saveToGallery(bitmap, film)
-                    Snackbar.make(
-                        binding.root,
-                        R.string.downloaded_to_gallery,
-                        Snackbar.LENGTH_LONG
-                    )
-                        .setAction(R.string.open) {
-                            val intent = Intent()
-                            intent.action = Intent.ACTION_VIEW
-                            intent.type = "image/*"
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(intent)
-                        }
-                        .show()
                     binding.progressBar.isVisible = false
                 },
-                { error ->
+                { _ ->
                     binding.progressBar.isVisible = false
+                    Snackbar.make(binding.root, "Ошибка загрузки изображения", Snackbar.LENGTH_SHORT).show()
                 }
             )
             .also { disposables.add(it) }
+    }
+
+    private fun String.handleSingleQuote(): String {
+        return this.replace("'", "")
     }
 
     override fun onDestroyView() {
