@@ -15,12 +15,15 @@ import androidx.fragment.app.Fragment
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
 import com.dolgantsev.androindfirstproject.databinding.ActivityMainBinding
+import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.utils.BatteryReceiver
+import com.dolgantsev.androindfirstproject.domain.DatabaseSource
 import com.dolgantsev.androindfirstproject.view.fragments.*
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,11 +31,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var startScreenAnimationView: LottieAnimationView
     private val disposables = CompositeDisposable()
     private val batteryReceiver = BatteryReceiver()
+    @Inject lateinit var databaseSource: DatabaseSource // Предполагается инъекция
 
     // Лаунчер для запроса разрешения WRITE_SETTINGS
     private val requestWriteSettings = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (!Settings.System.canWrite(this)) {
-            // Разрешение не получено, показываем Snackbar
             showPermissionDeniedSnackbar()
         }
     }
@@ -53,6 +56,19 @@ class MainActivity : AppCompatActivity() {
             startScreenAnimationView.visibility = View.GONE
             if (savedInstanceState == null) {
                 changeFragment(HomeFragment(), "home")
+            }
+            // Обработка перехода из нотификации
+            val filmId = intent.getIntExtra("filmId", -1)
+            if (filmId != -1) {
+                disposables.add(
+                    databaseSource.getFilmById(filmId)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe({ film ->
+                            launchDetailsFragment(film)
+                        }, { _ ->
+                            Snackbar.make(binding.root, "Фильм не найден", Snackbar.LENGTH_SHORT).show()
+                        })
+                )
             }
         }, 3000)
 
@@ -168,7 +184,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Запуск экрана деталей фильма
-    fun launchDetailsFragment(film: com.dolgantsev.androindfirstproject.domain.Film) {
+    fun launchDetailsFragment(film: Film) {
         val bundle = Bundle().apply {
             putParcelable("film", film)
         }

@@ -94,6 +94,19 @@
         app:srcCompat="@drawable/ic_baseline_cloud_download_24"
         app:tint="@android:color/white"/>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/details_fab_notify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:borderWidth="0dp"
+        android:backgroundTint="@color/design_default_color_primary"
+        android:translationX="144dp"
+        app:layout_anchor="@id/app_bar"
+        app:layout_anchorGravity="left|bottom"
+        app:srcCompat="@drawable/baseline_access_alarms_24"
+        app:tint="@color/white"/>
+
     <ProgressBar
         android:id="@+id/progress_bar"
         android:visibility="invisible"

@@ -1,6 +1,10 @@
 package com.dolgantsev.androindfirstproject.view.fragments
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.app.TimePickerDialog
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
@@ -14,12 +18,16 @@ import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.dolgantsev.androindfirstproject.R
 import com.dolgantsev.androindfirstproject.databinding.FragmentDetailsBinding
+import com.dolgantsev.androindfirstproject.domain.Film
 import com.dolgantsev.androindfirstproject.viewmodel.DetailsFragmentViewModel
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import android.provider.MediaStore
+import android.provider.Settings
+import com.dolgantsev.androindfirstproject.utils.NotificationReceiver
+import java.util.*
 
 class DetailsFragment : Fragment() {
 
@@ -39,8 +47,8 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val film: com.dolgantsev.androindfirstproject.domain.Film? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getParcelable("film", com.dolgantsev.androindfirstproject.domain.Film::class.java)
+        val film: Film? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable("film", Film::class.java)
         } else {
             @Suppress("DEPRECATION")
             arguments?.getParcelable("film")
@@ -91,30 +99,30 @@ class DetailsFragment : Fragment() {
             binding.detailsFabShare.setOnClickListener {
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "Check out this film: ${film.title}\n\n${film.overview}")
+                    putExtra(Intent.EXTRA_TEXT, "Обрати внимание: ${film.title}\n\n${film.overview}")
                     type = "text/plain"
                 }
-                startActivity(Intent.createChooser(intent, "Share To:"))
+                startActivity(Intent.createChooser(intent, "Поделиться:"))
             }
 
             binding.detailsFabDownloadWp.setOnClickListener {
                 performAsyncLoadOfPoster(film)
             }
 
-            // Обновленный вызов с использованием id вместо title
+            binding.detailsFabNotify.setOnClickListener {
+                showTimePickerDialog(film)
+            }
+
             viewModel.getFilmById(film.id)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { loadedFilm ->
-                        // Фильм найден, обновляем UI
                         binding.detailsDescription.text = loadedFilm.overview
                     },
                     { _ ->
-                        // Ошибка при загрузке
                         Snackbar.make(binding.root, "Ошибка загрузки фильма", Snackbar.LENGTH_SHORT).show()
                     },
                     {
-                        // Фильм не найден (onComplete)
                         binding.detailsDescription.text = "Фильм не найден в базе данных"
                     }
                 )
@@ -142,7 +150,7 @@ class DetailsFragment : Fragment() {
         binding.detailsFabSave.setImageResource(iconResId)
     }
 
-    private fun saveToGallery(bitmap: Bitmap, film: com.dolgantsev.androindfirstproject.domain.Film?) {
+    private fun saveToGallery(bitmap: Bitmap, film: Film?) {
         val contentValues = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, film?.title?.handleSingleQuote() ?: "film_poster")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
@@ -181,7 +189,7 @@ class DetailsFragment : Fragment() {
         }
     }
 
-    private fun performAsyncLoadOfPoster(film: com.dolgantsev.androindfirstproject.domain.Film?) {
+    private fun performAsyncLoadOfPoster(film: Film?) {
         binding.progressBar.isVisible = true
         viewModel.loadWallpaper(
             com.dolgantsev.androindfirstproject.network.api.ApiConstants.IMAGES_URL + "original" + film?.posterPath,
@@ -204,6 +212,65 @@ class DetailsFragment : Fragment() {
 
     private fun String.handleSingleQuote(): String {
         return this.replace("'", "")
+    }
+
+    private fun showTimePickerDialog(film: Film?) {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+
+        TimePickerDialog(requireContext(), { _, selectedHour, selectedMinute ->
+            scheduleNotification(film, selectedHour, selectedMinute)
+        }, hour, minute, true).show()
+    }
+
+    private fun scheduleNotification(film: Film?, hour: Int, minute: Int) {
+        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(requireContext(), NotificationReceiver::class.java).apply {
+            putExtra("filmId", film?.id)
+            action = "com.dolgantsev.androindfirstproject.NOTIFY"
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            requireContext(),
+            film?.id ?: 0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            if (before(Calendar.getInstance())) {
+                add(Calendar.DATE, 1)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+                Snackbar.make(binding.root, "Напоминание запланировано на ${hour}:${minute}", Snackbar.LENGTH_SHORT).show()
+            } else {
+                Snackbar.make(
+                    binding.root,
+                    "Требуется разрешение для точных напоминаний",
+                    Snackbar.LENGTH_LONG
+                ).setAction("Разрешить") {
+                    startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                }.show()
+            }
+        } else {
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+            Snackbar.make(binding.root, "Напоминание запланировано на ${hour}:${minute}", Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroyView() {
