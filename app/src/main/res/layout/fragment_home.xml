@@ -34,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="@string/film_list_description"
-            tools:listitem="@layout/film_item"
+            tools:listitem="@layout/item_film_with_reminder"
             android:layout_margin="8dp"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

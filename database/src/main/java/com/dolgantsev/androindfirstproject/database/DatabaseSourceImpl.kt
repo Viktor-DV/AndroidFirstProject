@@ -47,4 +47,9 @@ class DatabaseSourceImpl @Inject constructor(
         return filmDao.getFilmById(id)
             .subscribeOn(Schedulers.io())
     }
+
+    override fun clearAllFilms(): Completable {
+        return filmDao.clearAllFilms()
+            .subscribeOn(Schedulers.io())
+    }
 }

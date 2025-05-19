@@ -12,4 +12,5 @@ interface DatabaseSource {
     fun deleteFilm(id: Int): Completable
     fun getFilmsByRating(minRating: Double): Single<List<Film>>
     fun getFilmById(id: Int): Maybe<Film>
+    fun clearAllFilms(): Completable
 }

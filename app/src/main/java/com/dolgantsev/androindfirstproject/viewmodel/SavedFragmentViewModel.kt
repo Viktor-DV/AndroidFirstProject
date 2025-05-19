@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.dolgantsev.androindfirstproject.App
 import com.dolgantsev.androindfirstproject.core.interactors.Interactor
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
@@ -25,19 +26,24 @@ class SavedFragmentViewModel : ViewModel() {
     }
 
     fun getSaved() {
-        interactor.getFilmsFromDB()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .map { films -> films.filter { it.isSaved } }
-            .subscribe(
-                { saved ->
-                    _savedFilms.value = saved
-                },
-                { error ->
-                    _savedFilms.value = emptyList()
-                }
-            )
-            .also { disposables.add(it) }
+        disposables.add(
+            interactor.getFilmsFromDB()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map { films -> films.filter { it.isSaved } }
+                .subscribe(
+                    { saved ->
+                        _savedFilms.value = saved
+                    },
+                    { error ->
+                        _savedFilms.value = emptyList()
+                    }
+                )
+        )
+    }
+
+    fun clearAllFilms(): Completable {
+        return interactor.clearAllFilms()
     }
 
     override fun onCleared() {

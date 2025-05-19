@@ -7,14 +7,17 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dolgantsev.androindfirstproject.R
+import com.dolgantsev.androindfirstproject.domain.Film
+import com.dolgantsev.androindfirstproject.utils.ReminderManager
 import com.dolgantsev.androindfirstproject.view.rv_viewholders.FilmViewHolder
 
 class FilmListRecyclerAdapter(
-    private val clickListener: OnItemClickListener
-) : ListAdapter<com.dolgantsev.androindfirstproject.domain.Film, RecyclerView.ViewHolder>(FilmDiffCallback()) {
+    private val clickListener: OnItemClickListener,
+    private val reminderListener: OnReminderActionListener? = null
+) : ListAdapter<Film, RecyclerView.ViewHolder>(FilmDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.film_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_film_with_reminder, parent, false)
         return FilmViewHolder(view)
     }
 
@@ -22,7 +25,7 @@ class FilmListRecyclerAdapter(
         when (holder) {
             is FilmViewHolder -> {
                 val film = getItem(position)
-                holder.bind(film)
+                holder.bind(film, reminderListener)
                 holder.itemView.findViewById<CardView>(R.id.item_container).setOnClickListener {
                     clickListener.click(film)
                 }
@@ -31,16 +34,22 @@ class FilmListRecyclerAdapter(
     }
 
     interface OnItemClickListener {
-        fun click(film: com.dolgantsev.androindfirstproject.domain.Film)
+        fun click(film: Film)
+    }
+
+    interface OnReminderActionListener {
+        fun onEditReminder(film: Film)
+        fun onDeleteReminder(film: Film)
+        fun onCreateReminder(film: Film)
     }
 }
 
-class FilmDiffCallback : DiffUtil.ItemCallback<com.dolgantsev.androindfirstproject.domain.Film>() {
-    override fun areItemsTheSame(oldItem: com.dolgantsev.androindfirstproject.domain.Film, newItem: com.dolgantsev.androindfirstproject.domain.Film): Boolean {
+class FilmDiffCallback : DiffUtil.ItemCallback<Film>() {
+    override fun areItemsTheSame(oldItem: Film, newItem: Film): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: com.dolgantsev.androindfirstproject.domain.Film, newItem: com.dolgantsev.androindfirstproject.domain.Film): Boolean {
+    override fun areContentsTheSame(oldItem: Film, newItem: Film): Boolean {
         return oldItem == newItem
     }
 }

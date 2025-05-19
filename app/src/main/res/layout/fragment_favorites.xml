@@ -13,7 +13,7 @@ tools:context=".view.fragments.FavoritesFragment">
     android:id="@+id/favorites_recycler"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:listitem="@layout/film_item"
+    tools:listitem="@layout/item_film_with_reminder"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 
 

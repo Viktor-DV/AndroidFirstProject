@@ -34,4 +34,7 @@ interface FilmDao {
 
     @Query("SELECT * FROM cached_films WHERE id = :id LIMIT 1")
     fun getFilmById(id: Int): Maybe<Film>
+
+    @Query("DELETE FROM cached_films")
+    fun clearAllFilms(): Completable
 }

@@ -72,6 +72,10 @@ class MainRepository @Inject constructor(
         return databaseSource.getFilmById(id)
     }
 
+    fun clearAllFilms(): Completable {
+        return databaseSource.clearAllFilms()
+    }
+
     private fun TmdbFilm.toFilm(): Film {
         return Film(
             id = id,

@@ -28,6 +28,6 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintTop_toBottomOf="@id/appbar"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:listitem="@layout/film_item"/>
+        tools:listitem="@layout/item_film_with_reminder"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

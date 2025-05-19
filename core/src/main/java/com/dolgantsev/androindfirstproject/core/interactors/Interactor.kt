@@ -36,4 +36,8 @@ class Interactor @Inject constructor(
     fun getFilmById(id: Int): Maybe<Film> {
         return repository.getFilmById(id)
     }
+
+    fun clearAllFilms(): Completable {
+        return repository.clearAllFilms()
+    }
 }
