@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "AndroindFirstProject"
 include(":app")
- 
+include(":network")
+include(":database")
+include(":domain")
+include(":core")
