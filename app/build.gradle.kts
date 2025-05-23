@@ -47,6 +47,23 @@ android {
     viewBinding {
         enable = true
     }
+
+    flavorDimensions += "version"
+
+    productFlavors {
+        create("free") {
+            dimension = "version"
+            applicationIdSuffix = ".free"
+            versionNameSuffix = "-free"
+            buildConfigField("boolean", "IS_PAID_VERSION", "false")
+        }
+        create("paid") {
+            dimension = "version"
+            applicationIdSuffix = ".paid"
+            versionNameSuffix = "-paid"
+            buildConfigField("boolean", "IS_PAID_VERSION", "true")
+        }
+    }
 }
 
 dependencies {
