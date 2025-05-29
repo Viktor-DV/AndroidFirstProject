@@ -21,6 +21,10 @@ import com.dolgantsev.androindfirstproject.domain.DatabaseSource
 import com.dolgantsev.androindfirstproject.utils.BatteryReceiver
 import com.dolgantsev.androindfirstproject.view.fragments.*
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -34,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     private val batteryReceiver = BatteryReceiver()
     @Inject lateinit var databaseSource: DatabaseSource
 
+    private lateinit var remoteConfig: FirebaseRemoteConfig
+
     private val requestWriteSettings = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (!Settings.System.canWrite(this)) {
             showPermissionDeniedSnackbar()
@@ -45,10 +51,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Проверка BuildConfig.IS_PAID_VERSION
-        if (!TrialManager.wasFirstLaunchPrompted(this) && !BuildConfig.IS_PAID_VERSION) {
-            showTrialActivationDialog()
-        }
+        // Инициализация Remote Config
+        initializeRemoteConfig()
 
         startScreenAnimationView = binding.startScreenAnimationView
         startScreenAnimationView.setRepeatCount(2)
@@ -72,7 +76,17 @@ class MainActivity : AppCompatActivity() {
                         })
                 )
             }
+
+            // Проверяем, можно ли показать промо-диалог (раз в 12 часов)
+            if (TrialManager.canShowPromoDialog(this)) {
+                fetchPromoData()
+            }
         }, 3000)
+
+        // Проверка BuildConfig.IS_PAID_VERSION
+        if (!TrialManager.wasFirstLaunchPrompted(this) && !BuildConfig.IS_PAID_VERSION) {
+            showTrialActivationDialog()
+        }
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             val currentFragment = supportFragmentManager.fragments.lastOrNull()
@@ -267,6 +281,44 @@ class MainActivity : AppCompatActivity() {
                     dialog.dismiss()
                 }
                 .show()
+        }
+    }
+
+    private fun initializeRemoteConfig() {
+        remoteConfig = Firebase.remoteConfig
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0 else 3600 // 1 час в продакшене
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
+        remoteConfig.setDefaultsAsync(
+            mapOf("promo_poster_url" to "")
+        )
+    }
+
+    private fun fetchPromoData() {
+        remoteConfig.fetchAndActivate().addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                val posterUrl = remoteConfig.getString("promo_poster_url")
+                if (posterUrl.isNotEmpty()) {
+                    // Для теста используем фильм с ID 603 (The Matrix)
+                    val testFilmId = 603
+                    disposables.add(
+                        databaseSource.getFilmById(testFilmId)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe({ film ->
+                                val dialog = PromoDialogFragment.newInstance(posterUrl, film)
+                                dialog.show(supportFragmentManager, "promo_dialog")
+                            }, { _ ->
+                                // Если фильм не найден, показываем диалог только с постером
+                                val dialog = PromoDialogFragment.newInstance(posterUrl, null)
+                                dialog.show(supportFragmentManager, "promo_dialog")
+                            })
+                    )
+                }
+            } else {
+                // Обработка ошибки
+                Snackbar.make(binding.root, "Ошибка загрузки промо", Snackbar.LENGTH_SHORT).show()
+            }
         }
     }
 }
