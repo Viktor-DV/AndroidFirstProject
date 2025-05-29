@@ -6,9 +6,25 @@
     <string name="btn_menu3">Посмотреть позже</string>
     <string name="btn_menu4">Подборки</string>
     <string name="btn_menu5">Настройки</string>
+    <string name="btn_menu7">Главная</string>
     <string name="page_title">Ищем!</string>
     <string name="error_no_film">Ошибка: данные фильма отсутствуют.</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="menu_settings_title_text">Настройки</string>
+    <string name="radio_button_popular">Популярные</string>
+    <string name="radio_button_top_rated">Топ</string>
+    <string name="radio_button_upcoming">Скоро</string>
+    <string name="radio_button_playing">В кинотеатрах</string>
+    <string name="radio_group_header">Подборка на главном экране:</string>
+    <string name="film_list_description">Список фильмов</string>
+    <string name="button_high_rated">Рейтинговое</string>
+    <string name="button_update">Обновить</string>
+    <string name="button_delete">Удалить</string>
+    <string name="reminder_time_placeholder">Напоминание: %s</string>
+    <string name="permission_storage">Нет разрешения. Пожалуйста, предоставьте разрешение</string>
+    <string name="downloaded_to_gallery">Сохранено в галерею</string>
+    <string name="open">В галерею</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-
+    <string name="promo_title">РЕКОМЕНДАЦИЯ ДНЯ</string>
+    <string name="promo_details_button">Подробнее</string>
+    <string name="promo_dismiss_button">Не интересует</string>
 </resources>
